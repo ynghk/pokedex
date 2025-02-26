@@ -7,12 +7,12 @@ class ApiService {
   final String baseUrl = 'https://pokeapi.co/api/v2/pokemon';
   final String kantoRegion = 'limit=151';
 
-  Future <List<PokemonListResult>> getKantoPokemonData() async {
+  Future<List<PokemonListResult>> getKantoPokemonData() async {
     List<PokemonListResult> kantoPokemon = [];
     final Uri url = Uri.parse('$baseUrl?$kantoRegion');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final pokemons = PokemonList.fromjson(jsonDecode(response.body));
+      final pokemons = PokemonList.fromJson(jsonDecode(response.body));
       List<dynamic> pokemonData = pokemons.results;
       for (var pokemon in pokemonData) {
         final pokemonListResult = PokemonListResult.fromjson(pokemon);

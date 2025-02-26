@@ -14,7 +14,6 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     pokemons = ApiService().getKantoPokemonData();
     print(pokemons);
