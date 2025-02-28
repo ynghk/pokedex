@@ -108,6 +108,7 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
               'Name: ${widget.pokemon.name.capitalize()}',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+
             // 타입, 약점, 스탯, 설명, 진화, 특성 PokeAPI에서 더 가져와야 함
           ],
         ),
