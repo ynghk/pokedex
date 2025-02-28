@@ -32,7 +32,12 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
         backgroundColor: Colors.red,
         leading: Icon(Icons.list, size: 40, color: Colors.white),
         title: Image.asset('assets/Pokédex_logo.png', width: 130),
-        actions: [Image.asset('assets/pokeball_icon.png', width: 40)],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Image.asset('assets/pokeball_icon.png', width: 40),
+          ),
+        ],
       ),
       body: Column(
         children: [
