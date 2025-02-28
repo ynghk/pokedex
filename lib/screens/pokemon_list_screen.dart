@@ -30,15 +30,15 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
-        leading: Icon(Icons.list, size: 40),
+        leading: Icon(Icons.list, size: 40, color: Colors.white),
         title: Image.asset('assets/Pokédex_logo.png', width: 130),
         actions: [Image.asset('assets/pokeball_icon.png', width: 40)],
       ),
       body: Column(
         children: [
-          SizedBox(height: 20),
+          SizedBox(height: 12),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Row(
               children: [
                 Expanded(
@@ -64,7 +64,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
               ],
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 12),
           //ListView의 크기를 따로 지정해주지 않으면 에러가 나기 때문에 expanded로 지정해줌
           Expanded(
             child: FutureBuilder(
@@ -92,7 +92,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                     itemBuilder: (context, index) {
                       var pokemon = filteredPokemons[index];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Row(
                           children: [
                             Image.network(
