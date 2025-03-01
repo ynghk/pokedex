@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokemon_list_result.dart';
+import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/screens/pokemon_detail_screen.dart';
 import 'package:pokedex_app/services/api_service.dart';
-import 'package:pokedex_app/utils/string_utils.dart';
 
 class PokemonListScreen extends StatefulWidget {
   const PokemonListScreen({super.key});
@@ -12,7 +11,7 @@ class PokemonListScreen extends StatefulWidget {
 }
 
 class _PokemonListScreenState extends State<PokemonListScreen> {
-  late Future<List<PokemonListResult>> pokemons;
+  late Future<List<PokedexEntry>> pokemons;
   String searchQuery = '';
 
   @override
@@ -92,7 +91,7 @@ class KantoPokemonList extends StatelessWidget {
     required this.searchQuery,
   });
 
-  final Future<List<PokemonListResult>> pokemons;
+  final Future<List<PokedexEntry>> pokemons;
   final String searchQuery;
 
   @override
@@ -110,8 +109,8 @@ class KantoPokemonList extends StatelessWidget {
         }
         //검색 필터링
         final filteredPokemons =
-            snapshot.data!.where((pokemon) {
-              return pokemon.name.toLowerCase().contains(
+            snapshot.data!.where((p) {
+              return p.name.toLowerCase().contains(
                 searchQuery,
               ); //대소문자 구분 없이 검색 한 포켓몬의 필터링이 가능하게 함
             }).toList();
@@ -129,7 +128,7 @@ class KantoPokemonList extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (context) => PokemonDetailScreen(pokemon: pokemon),
+                            (context) => PokemonDetailScreen(pokedex: pokemon),
                       ),
                     );
                   },
@@ -137,7 +136,7 @@ class KantoPokemonList extends StatelessWidget {
                     children: [
                       Image.network(
                         //포켓몬 번호를 url에 파싱 해줌으로써 해당 포켓몬의 이미지를 불러옴
-                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.getPokemonId()}.png',
+                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
                         errorBuilder:
                             (context, error, stackTrace) => Image.asset(
                               'assets/pokeball_error.png',
@@ -151,7 +150,7 @@ class KantoPokemonList extends StatelessWidget {
                       SizedBox(width: 20),
                       //포켓몬 이름 표시해주는 것.
                       Text(
-                        '${pokemon.getPokemonId()}. ${pokemon.name.capitalize()}', //url에서 추출한 포켓몬 번호와 포켓몬의 이름 표시
+                        '${pokemon.id}. ${pokemon.name}',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
