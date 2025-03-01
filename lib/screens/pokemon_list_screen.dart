@@ -43,6 +43,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       body: Column(
         children: [
           SizedBox(height: 12),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Row(
@@ -70,7 +71,9 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
               ],
             ),
           ),
+
           SizedBox(height: 12),
+
           //ListView의 크기를 따로 지정해주지 않으면 에러가 나기 때문에 expanded로 지정해줌
           Expanded(
             child: KantoPokemonList(
@@ -147,7 +150,9 @@ class KantoPokemonList extends StatelessWidget {
                         height: 80,
                         fit: BoxFit.contain,
                       ),
+
                       SizedBox(width: 20),
+
                       //포켓몬 이름 표시해주는 것.
                       Text(
                         '${pokemon.id}. ${pokemon.name}',
@@ -156,7 +161,9 @@ class KantoPokemonList extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       Spacer(),
+
                       Icon(Icons.chevron_right_rounded, size: 25),
                     ],
                   ),
