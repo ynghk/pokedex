@@ -1,4 +1,3 @@
-
 class PokemonList {
   final int count;
   final String next;
