@@ -84,55 +84,68 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                         ),
 
                         const SizedBox(height: 30),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: SafeArea(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Height: ${snapshot.data!.height / 10}m, Weight: ${snapshot.data!.weight / 10}kg',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
 
-                        Text(
-                          'Height: ${snapshot.data!.height / 10}m, Weight: ${snapshot.data!.weight / 10}kg',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+                                  const SizedBox(height: 12),
 
-                        const SizedBox(height: 12),
+                                  RichText(
+                                    text: TextSpan(
+                                      text: 'Types: ',
+                                      style: const TextStyle(
+                                        fontSize: 28,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      children:
+                                          snapshot.data!.types
+                                              .join(', ')
+                                              .toTypeColoredText(),
+                                    ),
+                                  ),
 
-                        RichText(
-                          text: TextSpan(
-                            text: 'Types: ',
-                            style: const TextStyle(
-                              fontSize: 28,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w700,
+                                  const SizedBox(height: 12),
+
+                                  Text(
+                                    'Ability: ------',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  Text(
+                                    '-Description- \n${snapshot.data!.flavorText}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 24),
+
+                                  EvolutionStageWidget(
+                                    evolutionChain: _evolutionChain,
+                                    currentPokemonId: widget.pokedex.id,
+                                  ),
+                                ],
+                              ),
                             ),
-                            children:
-                                snapshot.data!.types
-                                    .join(', ')
-                                    .toTypeColoredText(),
                           ),
                         ),
-
-                        const SizedBox(height: 12),
-
-                        Text(
-                          'Ability: ------',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        Text(
-                          '-Description- \n${snapshot.data!.flavorText}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        EvolutionStageWidget(evolutionChain: _evolutionChain),
                       ],
                     ),
                   ),
@@ -145,15 +158,17 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
 class EvolutionStageWidget extends StatelessWidget {
   const EvolutionStageWidget({
     super.key,
-    required Future<List<EvolutionStage>> evolutionChain,
-  }) : _evolutionChain = evolutionChain;
+    required this.evolutionChain,
+    required this.currentPokemonId,
+  });
 
-  final Future<List<EvolutionStage>> _evolutionChain;
+  final Future<List<EvolutionStage>> evolutionChain;
+  final int currentPokemonId;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<EvolutionStage>>(
-      future: _evolutionChain,
+      future: evolutionChain,
       builder: (context, evoSnapshot) {
         if (evoSnapshot.connectionState == ConnectionState.waiting) {
           return Center(child: const CircularProgressIndicator());
@@ -162,63 +177,76 @@ class EvolutionStageWidget extends StatelessWidget {
           return Text('Evolution Error: ${evoSnapshot.error}');
         }
         final stages = evoSnapshot.data!;
-        final base = stages[0]; // Eevee (첫 번째)
-        final evolves = stages.sublist(1);
+        final base = stages[0];
+
+        final currentEvolution = stages.firstWhere(
+          (stage) => stage.id == currentPokemonId,
+        );
+        final currentIndex = stages.indexWhere(
+          (stage) => stage.id == currentPokemonId,
+        );
+        final isBasePokemon = currentIndex == 0; // 1차 포켓몬인지 확인
+        final isEeveeEvolution =
+            stages.length > 2 &&
+            base.name.toLowerCase() == 'eevee'; // 이브이 계열인지 확인
+
+        // 표시할 진화 단계 결정
+        List<EvolutionStage> displayStages;
+        if (isEeveeEvolution) {
+          // 이브이 계열: 현재 포켓몬으로의 경로만 표시
+          displayStages = [
+            base,
+            stages.firstWhere((stage) => stage.id == currentPokemonId),
+          ];
+        } else if (isBasePokemon) {
+          // 1차 포켓몬: 모든 단계 표시
+          displayStages = stages;
+        } else {
+          // 중간/최종 진화체: 1차부터 현재까지 표시
+          displayStages = stages.sublist(0, currentIndex + 1);
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              'Evolution:',
+              '-Evolution-',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
-                  children: [
-                    Image.network(
-                      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${base.id}.png',
-                      width: 50,
-                      height: 50,
-                      errorBuilder:
-                          (context, error, stackTrace) =>
-                              const Icon(Icons.error),
-                    ),
-                    Text(
-                      base.name.capitalize(),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 16.0,
-              runSpacing: 8.0,
-              alignment: WrapAlignment.center,
               children:
-                  evolves.map((stage) {
+                  displayStages.map((stage) {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('->', style: TextStyle(fontSize: 20)),
                         Column(
                           children: [
                             Image.network(
                               'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
-                              width: 50,
-                              height: 50,
+                              width: 80,
+                              height: 80,
                               errorBuilder:
                                   (context, error, stackTrace) =>
-                                      const Icon(Icons.error),
+                                      Image.asset('assets/pokeball_error.png'),
                             ),
                             Text(
-                              '${stage.name.capitalize()} (${stage.item ?? 'Lv.${stage.minLevel}'})',
+                              stage.name.capitalize(),
                               style: const TextStyle(fontSize: 12),
                             ),
+                            if (stage != base) // 1차 포켓몬이 아니면 진화 조건 표시
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40.0,
+                                ),
+                                child: Text(
+                                  '(${stage.item ?? 'Lv.${stage.minLevel}'})',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ),
                           ],
                         ),
+                        if (stage != displayStages.last) // 마지막 단계가 아니면 화살표 추가
+                          const Text('->', style: TextStyle(fontSize: 20)),
                       ],
                     );
                   }).toList(),
