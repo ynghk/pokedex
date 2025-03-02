@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/screens/pokemon_detail_screen.dart';
+import 'package:pokedex_app/screens/pokedex_screen.dart';
 import 'package:pokedex_app/services/api_service.dart';
 
 class PokemonListScreen extends StatefulWidget {
@@ -130,8 +130,7 @@ class KantoPokemonList extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (context) => PokemonDetailScreen(pokedex: pokemon),
+                        builder: (context) => PokedexScreen(pokedex: pokemon),
                       ),
                     );
                   },
