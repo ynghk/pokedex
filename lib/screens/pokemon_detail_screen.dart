@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pokedex_app/models/evolution_stage.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/models/pokemon_detail.dart';
 import 'package:pokedex_app/services/api_service.dart';
@@ -17,11 +18,15 @@ class PokemonDetailScreen extends StatefulWidget {
 class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
   final ShinyPokemon shinyPokemon = ShinyPokemon();
   late Future<PokemonDetail> _pokemonDetail;
+  late Future<List<EvolutionStage>> _evolutionChain;
 
   @override
   void initState() {
     super.initState();
     _pokemonDetail = ApiService().getPokemonDetail(widget.pokedex.id);
+    _evolutionChain = ApiService().getEvolutionChainForPokemon(
+      widget.pokedex.id,
+    );
   }
 
   @override
@@ -46,7 +51,7 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
           appBar: AppBar(
             backgroundColor: appBarColor, // 동적 색상 적용
             title: Text(
-              widget.pokedex.name.capitalize(),
+              'No.${widget.pokedex.id} ${widget.pokedex.name.capitalize()}',
               style: TextStyle(
                 color: textColor,
                 fontSize: 30,
@@ -65,75 +70,19 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Center(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(128),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
+                          child: PokemonImage(
+                            imageUrl: shinyPokemon.getPokemonImageUrl(
+                              widget.pokedex,
                             ),
-                            child: Stack(
-                              alignment: Alignment.topRight,
-                              children: [
-                                // 길어질 수 있는 이미지 로딩 시간을 Image.network 대신 CachedNetworkImage로 미리 로컬에 이미지를 로드시킴
-                                CachedNetworkImage(
-                                  imageUrl: shinyPokemon.getPokemonImageUrl(
-                                    widget.pokedex,
-                                  ),
-                                  width: 350,
-                                  height: 350,
-                                  fit: BoxFit.contain,
-                                  placeholder:
-                                      (context, url) => Center(
-                                        child: CircularProgressIndicator(
-                                          constraints: BoxConstraints.tightFor(
-                                            width: 80,
-                                            height: 80,
-                                          ),
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.blueAccent,
-                                              ),
-                                        ),
-                                      ), //이미지 로딩중 프로그레스바 나타냄
-                                  // 이미지를 불러오지 못했을 경우 에러표시
-                                  errorWidget: (context, url, error) {
-                                    return Image.asset(
-                                      'assets/pokeball_error.png',
-                                      width: 350,
-                                      fit: BoxFit.contain,
-                                    );
-                                  },
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(15),
-                                  // 이로치 포켓몬 이미지 전환 활성화 버튼 위해 우측 상단 배치
-                                  child: IconButton(
-                                    icon: Image.asset(
-                                      shinyPokemon.isShiny
-                                          ? 'assets/shiny_on_icon.png'
-                                          : 'assets/shiny_off_icon.png',
-                                      width: 30,
-                                      height: 30,
-                                      fit: BoxFit.contain,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        shinyPokemon.toggleShiny();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
+                            isShiny: shinyPokemon.isShiny,
+                            onToggleShiny: () {
+                              setState(() {
+                                shinyPokemon.toggleShiny();
+                              });
+                            },
                           ),
                         ),
+
                         const SizedBox(height: 30),
 
                         Text(
@@ -181,14 +130,178 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 24),
 
-                        Text('--------Evolution-------'),
+                        FutureBuilder<List<EvolutionStage>>(
+                          future: _evolutionChain,
+                          builder: (context, evoSnapshot) {
+                            if (evoSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: const CircularProgressIndicator(),
+                              );
+                            }
+                            if (evoSnapshot.hasError) {
+                              return Text(
+                                'Evolution Error: ${evoSnapshot.error}',
+                              );
+                            }
+                            final stages = evoSnapshot.data!;
+                            final base = stages[0]; // Eevee (첫 번째)
+                            final evolves = stages.sublist(1);
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Evolution:',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        Image.network(
+                                          'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${base.id}.png',
+                                          width: 50,
+                                          height: 50,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.error),
+                                        ),
+                                        Text(
+                                          base.name.capitalize(),
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 16.0,
+                                  runSpacing: 8.0,
+                                  alignment: WrapAlignment.center,
+                                  children:
+                                      evolves.map((stage) {
+                                        return Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text(
+                                              '->',
+                                              style: TextStyle(fontSize: 20),
+                                            ),
+                                            Column(
+                                              children: [
+                                                Image.network(
+                                                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
+                                                  width: 50,
+                                                  height: 50,
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) => const Icon(
+                                                        Icons.error,
+                                                      ),
+                                                ),
+                                                Text(
+                                                  '${stage.name.capitalize()} (${stage.item ?? 'Lv.${stage.minLevel}'})',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      }).toList(),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
         );
       },
+    );
+  }
+}
+
+//포켓몬 이미지 클래스 분리
+class PokemonImage extends StatelessWidget {
+  final String imageUrl; // 이미지 URL 전달
+  final bool isShiny; // 이로치 상태 전달
+  final VoidCallback onToggleShiny; // 버튼 콜백 전달
+
+  const PokemonImage({
+    super.key,
+    required this.imageUrl,
+    required this.isShiny,
+    required this.onToggleShiny,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(128),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.topRight,
+        children: [
+          CachedNetworkImage(
+            imageUrl: imageUrl,
+            width: 350,
+            height: 350,
+            fit: BoxFit.contain,
+            placeholder:
+                (context, url) => const Center(
+                  child: CircularProgressIndicator(
+                    constraints: BoxConstraints.tightFor(width: 80, height: 80),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.blueAccent,
+                    ),
+                  ),
+                ),
+            errorWidget:
+                (context, url, error) => Image.asset(
+                  'assets/pokeball_error.png',
+                  width: 350,
+                  fit: BoxFit.contain,
+                ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(15),
+            child: IconButton(
+              icon: Image.asset(
+                isShiny
+                    ? 'assets/shiny_on_icon.png'
+                    : 'assets/shiny_off_icon.png',
+                width: 30,
+                height: 30,
+                fit: BoxFit.contain,
+              ),
+              onPressed: onToggleShiny,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
