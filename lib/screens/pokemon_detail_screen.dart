@@ -132,102 +132,98 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
 
                         const SizedBox(height: 24),
 
-                        FutureBuilder<List<EvolutionStage>>(
-                          future: _evolutionChain,
-                          builder: (context, evoSnapshot) {
-                            if (evoSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(
-                                child: const CircularProgressIndicator(),
-                              );
-                            }
-                            if (evoSnapshot.hasError) {
-                              return Text(
-                                'Evolution Error: ${evoSnapshot.error}',
-                              );
-                            }
-                            final stages = evoSnapshot.data!;
-                            final base = stages[0]; // Eevee (첫 번째)
-                            final evolves = stages.sublist(1);
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Evolution:',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Column(
-                                      children: [
-                                        Image.network(
-                                          'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${base.id}.png',
-                                          width: 50,
-                                          height: 50,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Icon(Icons.error),
-                                        ),
-                                        Text(
-                                          base.name.capitalize(),
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 16.0,
-                                  runSpacing: 8.0,
-                                  alignment: WrapAlignment.center,
-                                  children:
-                                      evolves.map((stage) {
-                                        return Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Text(
-                                              '->',
-                                              style: TextStyle(fontSize: 20),
-                                            ),
-                                            Column(
-                                              children: [
-                                                Image.network(
-                                                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
-                                                  width: 50,
-                                                  height: 50,
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) => const Icon(
-                                                        Icons.error,
-                                                      ),
-                                                ),
-                                                Text(
-                                                  '${stage.name.capitalize()} (${stage.item ?? 'Lv.${stage.minLevel}'})',
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        );
-                                      }).toList(),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                        EvolutionStageWidget(evolutionChain: _evolutionChain),
                       ],
                     ),
                   ),
+        );
+      },
+    );
+  }
+}
+
+class EvolutionStageWidget extends StatelessWidget {
+  const EvolutionStageWidget({
+    super.key,
+    required Future<List<EvolutionStage>> evolutionChain,
+  }) : _evolutionChain = evolutionChain;
+
+  final Future<List<EvolutionStage>> _evolutionChain;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<EvolutionStage>>(
+      future: _evolutionChain,
+      builder: (context, evoSnapshot) {
+        if (evoSnapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: const CircularProgressIndicator());
+        }
+        if (evoSnapshot.hasError) {
+          return Text('Evolution Error: ${evoSnapshot.error}');
+        }
+        final stages = evoSnapshot.data!;
+        final base = stages[0]; // Eevee (첫 번째)
+        final evolves = stages.sublist(1);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              'Evolution:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Image.network(
+                      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${base.id}.png',
+                      width: 50,
+                      height: 50,
+                      errorBuilder:
+                          (context, error, stackTrace) =>
+                              const Icon(Icons.error),
+                    ),
+                    Text(
+                      base.name.capitalize(),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 16.0,
+              runSpacing: 8.0,
+              alignment: WrapAlignment.center,
+              children:
+                  evolves.map((stage) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('->', style: TextStyle(fontSize: 20)),
+                        Column(
+                          children: [
+                            Image.network(
+                              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
+                              width: 50,
+                              height: 50,
+                              errorBuilder:
+                                  (context, error, stackTrace) =>
+                                      const Icon(Icons.error),
+                            ),
+                            Text(
+                              '${stage.name.capitalize()} (${stage.item ?? 'Lv.${stage.minLevel}'})',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }).toList(),
+            ),
+          ],
         );
       },
     );
