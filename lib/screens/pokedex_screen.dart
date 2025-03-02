@@ -6,16 +6,16 @@ import 'package:pokedex_app/models/pokemon_detail.dart';
 import 'package:pokedex_app/services/api_service.dart';
 import 'package:pokedex_app/utils/string_utils.dart';
 
-class PokemonDetailScreen extends StatefulWidget {
+class PokedexScreen extends StatefulWidget {
   final PokedexEntry pokedex;
 
-  const PokemonDetailScreen({super.key, required this.pokedex});
+  const PokedexScreen({super.key, required this.pokedex});
 
   @override
-  State<PokemonDetailScreen> createState() => _PokemonDetailScreenState();
+  State<PokedexScreen> createState() => _PokemonDetailScreenState();
 }
 
-class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
+class _PokemonDetailScreenState extends State<PokedexScreen> {
   final ShinyPokemon shinyPokemon = ShinyPokemon();
   late Future<PokemonDetail> _pokemonDetail;
   late Future<List<EvolutionStage>> _evolutionChain;
