@@ -64,47 +64,52 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : snapshot.hasError
                   ? Center(child: Text('Error: ${snapshot.error}'))
-                  : Padding(
-                    padding: const EdgeInsets.all(12.0),
+                  : SafeArea(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: PokemonImage(
-                            imageUrl: shinyPokemon.getPokemonImageUrl(
-                              widget.pokedex,
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Center(
+                            child: PokemonImage(
+                              imageUrl: shinyPokemon.getPokemonImageUrl(
+                                widget.pokedex,
+                              ),
+                              isShiny: shinyPokemon.isShiny,
+                              onToggleShiny: () {
+                                setState(() {
+                                  shinyPokemon.toggleShiny();
+                                });
+                              },
                             ),
-                            isShiny: shinyPokemon.isShiny,
-                            onToggleShiny: () {
-                              setState(() {
-                                shinyPokemon.toggleShiny();
-                              });
-                            },
                           ),
                         ),
 
-                        const SizedBox(height: 30),
                         Expanded(
                           child: SingleChildScrollView(
-                            child: SafeArea(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15,
+                                  ),
+                                  child: Text(
                                     'Height: ${snapshot.data!.height / 10}m, Weight: ${snapshot.data!.weight / 10}kg',
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
+                                ),
 
-                                  const SizedBox(height: 12),
-
-                                  RichText(
+                                Padding(
+                                  padding: const EdgeInsets.all(15),
+                                  child: RichText(
                                     text: TextSpan(
                                       text: 'Types: ',
                                       style: const TextStyle(
-                                        fontSize: 28,
+                                        fontSize: 25,
                                         color: Colors.black,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -114,35 +119,124 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                               .toTypeColoredText(),
                                     ),
                                   ),
+                                ),
 
-                                  const SizedBox(height: 12),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 5.0,
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Center(
+                                            child: Text(
+                                              '-Ability-',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
 
-                                  Text(
-                                    'Ability: ------',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500,
+                                          const SizedBox(height: 10),
+                                          Center(
+                                            child: Text(
+                                              snapshot.data!.abilities,
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
+                                ),
 
-                                  const SizedBox(height: 12),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 5.0,
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Center(
+                                            child: Text(
+                                              '-Description-',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
 
-                                  Text(
-                                    '-Description- \n${snapshot.data!.flavorText}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            snapshot.data!.flavorText,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
+                                ),
 
-                                  const SizedBox(height: 24),
-
-                                  EvolutionStageWidget(
-                                    evolutionChain: _evolutionChain,
-                                    currentPokemonId: widget.pokedex.id,
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 5,
+                                    left: 15,
+                                    right: 15,
+                                    bottom: 15,
                                   ),
-                                ],
-                              ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: EvolutionStageWidget(
+                                      evolutionChain: _evolutionChain,
+                                      currentPokemonId: widget.pokedex.id,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -193,17 +287,17 @@ class EvolutionStageWidget extends StatelessWidget {
         // 표시할 진화 단계 결정
         List<EvolutionStage> displayStages;
         if (isEeveeEvolution) {
-          // 이브이 계열: 현재 포켓몬으로의 경로만 표시
-          displayStages = [
-            base,
-            stages.firstWhere((stage) => stage.id == currentPokemonId),
-          ];
+          if (currentPokemonId == base.id) {
+            displayStages = stages;
+          } else {
+            displayStages = [base, currentEvolution];
+          }
         } else if (isBasePokemon) {
           // 1차 포켓몬: 모든 단계 표시
           displayStages = stages;
         } else {
           // 중간/최종 진화체: 1차부터 현재까지 표시
-          displayStages = stages.sublist(0, currentIndex + 1);
+          displayStages = stages;
         }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -212,45 +306,125 @@ class EvolutionStageWidget extends StatelessWidget {
               '-Evolution-',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children:
-                  displayStages.map((stage) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Column(
-                          children: [
-                            Image.network(
-                              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
-                              width: 80,
-                              height: 80,
-                              errorBuilder:
-                                  (context, error, stackTrace) =>
-                                      Image.asset('assets/pokeball_error.png'),
-                            ),
-                            Text(
-                              stage.name.capitalize(),
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            if (stage != base) // 1차 포켓몬이 아니면 진화 조건 표시
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 40.0,
+            if (isEeveeEvolution &&
+                currentPokemonId == base.id) // Eevee 클릭 시 분기형
+              Column(
+                children: [
+                  Column(
+                    children: [
+                      Image.network(
+                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${base.id}.png',
+                        width: 80,
+                        height: 80,
+                        errorBuilder:
+                            (context, error, stackTrace) =>
+                                Image.asset('assets/pokeball_error.png'),
+                      ),
+                      Text(
+                        base.name.capitalize(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Icon(
+                        Icons.arrow_downward_rounded,
+                        size: 30,
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+                  // 분기 진화 표시
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 5,
+                      childAspectRatio: 1,
+                      physics: NeverScrollableScrollPhysics(),
+                      children:
+                          stages.sublist(1).map((stage) {
+                            return Column(
+                              children: [
+                                Image.network(
+                                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
+                                  width: 80,
+                                  height: 80,
+                                  errorBuilder:
+                                      (context, error, stackTrace) =>
+                                          Image.asset(
+                                            'assets/pokeball_error.png',
+                                            width: 80,
+                                          ),
                                 ),
-                                child: Text(
+                                Text(
+                                  stage.name.capitalize(),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
                                   '(${stage.item ?? 'Lv.${stage.minLevel}'})',
                                   style: const TextStyle(fontSize: 10),
                                 ),
+                              ],
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ],
+              )
+            else // 선형 진화
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:
+                    displayStages.map((stage) {
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Column(
+                            children: [
+                              Image.network(
+                                'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.id}.png',
+                                width: 80,
+                                height: 80,
+                                errorBuilder:
+                                    (context, error, stackTrace) => Image.asset(
+                                      'assets/pokeball_error.png',
+                                      width: 80,
+                                    ),
                               ),
-                          ],
-                        ),
-                        if (stage != displayStages.last) // 마지막 단계가 아니면 화살표 추가
-                          const Text('->', style: TextStyle(fontSize: 20)),
-                      ],
-                    );
-                  }).toList(),
-            ),
+                              Text(
+                                stage.name.capitalize(),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (stage != base)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 25.0,
+                                  ),
+                                  child: Text(
+                                    '(${stage.item ?? 'Lv.${stage.minLevel}'})',
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (stage != displayStages.last)
+                            Icon(Icons.arrow_forward_rounded, size: 30),
+                        ],
+                      );
+                    }).toList(),
+              ),
           ],
         );
       },
@@ -291,8 +465,8 @@ class PokemonImage extends StatelessWidget {
         children: [
           CachedNetworkImage(
             imageUrl: imageUrl,
-            width: 350,
-            height: 350,
+            width: 400,
+            height: 380,
             fit: BoxFit.contain,
             placeholder:
                 (context, url) => const Center(
@@ -311,7 +485,7 @@ class PokemonImage extends StatelessWidget {
                 ),
           ),
           Padding(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(10),
             child: IconButton(
               icon: Image.asset(
                 isShiny
