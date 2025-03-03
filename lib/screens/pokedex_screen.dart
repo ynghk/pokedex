@@ -109,7 +109,7 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                     text: TextSpan(
                                       text: 'Types: ',
                                       style: const TextStyle(
-                                        fontSize: 25,
+                                        fontSize: 24,
                                         color: Colors.black,
                                         fontWeight: FontWeight.w700,
                                       ),

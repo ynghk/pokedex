@@ -47,13 +47,32 @@ extension StringCapitalize on String {
     final words = split(', '); // 타입 나누기
     return words.map((word) {
       final capitalizedWord = word.capitalize();
-      final color =
+      final backgroundColor =
           pokemonTypeColors[word.toLowerCase()] ??
           Colors.black; // 타입에 맞는 색상, 없으면 검정
       return TextSpan(
-        text:
-            '$capitalizedWord${words.last == word ? '' : ', '}', // 마지막 단어엔 쉼표 안 붙임
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        children: [
+          WidgetSpan(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              margin: const EdgeInsets.only(right: 5),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                capitalizedWord,
+                style: TextStyle(
+                  color:
+                      backgroundColor.computeLuminance() > 0.5
+                          ? Colors.black
+                          : Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }).toList();
   }
