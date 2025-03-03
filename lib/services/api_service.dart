@@ -39,12 +39,16 @@ class ApiService {
           )['flavor_text']
           .toString()
           .replaceAll('\n', ' ');
+      final abilityList = (pokemonData['abilities'] as List)
+          .map((ability) => ability['ability']['name'] as String)
+          .join(', ');
 
       return PokemonDetail(
         height: height,
         weight: weight,
         types: types,
         flavorText: flavorText,
+        abilities: abilityList,
       );
     } else {
       throw Exception('Failed to load Pokémon detail');
@@ -61,7 +65,7 @@ class ApiService {
     final speciesData = jsonDecode(speciesResponse.body);
     final chainUrl = speciesData['evolution_chain']['url'];
     final chainResponse = await http.get(Uri.parse(chainUrl));
-    if (chainResponse.statusCode != 200) 
+    if (chainResponse.statusCode != 200)
       throw Exception('Failed to load evolution chain');
 
     final chainData = jsonDecode(chainResponse.body)['chain'];
@@ -75,6 +79,7 @@ class ApiService {
         parseChain(next);
       }
     }
+
     parseChain(chainData);
     return stages;
   }
