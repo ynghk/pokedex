@@ -4,6 +4,7 @@ import 'package:pokedex_app/models/evolution_stage.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/models/pokemon_detail.dart';
 
+//관동기방 포켓몬 불러오기
 class ApiService {
   Future<List<PokedexEntry>> getKantoPokemonData() async {
     final response = await http.get(
@@ -16,6 +17,7 @@ class ApiService {
         .toList();
   }
 
+  // 포켓몬의 정보 불러오기
   Future<PokemonDetail> getPokemonDetail(int id) async {
     final speciesResponse = await http.get(
       Uri.parse('https://pokeapi.co/api/v2/pokemon-species/$id'),
@@ -55,18 +57,21 @@ class ApiService {
     }
   }
 
+  //포켓몬 진화 정보 불러오기
   Future<List<EvolutionStage>> getEvolutionChainForPokemon(int id) async {
     final speciesResponse = await http.get(
       Uri.parse('https://pokeapi.co/api/v2/pokemon-species/$id'),
     );
-    if (speciesResponse.statusCode != 200)
+    if (speciesResponse.statusCode != 200) {
       throw Exception('Failed to load species');
+    }
 
     final speciesData = jsonDecode(speciesResponse.body);
     final chainUrl = speciesData['evolution_chain']['url'];
     final chainResponse = await http.get(Uri.parse(chainUrl));
-    if (chainResponse.statusCode != 200)
+    if (chainResponse.statusCode != 200) {
       throw Exception('Failed to load evolution chain');
+    }
 
     final chainData = jsonDecode(chainResponse.body)['chain'];
     List<EvolutionStage> stages = [];
