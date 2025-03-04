@@ -15,7 +15,7 @@ class ApiService {
       final pokemons = PokemonList.fromJson(jsonDecode(response.body));
       List<dynamic> pokemonData = pokemons.results;
       for (var pokemon in pokemonData) {
-        final pokemonListResult = PokemonListResult.fromjson(pokemon);
+        final pokemonListResult = PokemonListResult.fromJson(pokemon);
         kantoPokemon.add(pokemonListResult);
       }
     }
