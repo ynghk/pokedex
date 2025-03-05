@@ -31,14 +31,115 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
-        leading: Icon(Icons.list, size: 40, color: Colors.white),
-        title: Image.asset('assets/Pokédex_logo.png', width: 130),
+        leading: Builder(
+          builder:
+              (context) => IconButton(
+                icon: Icon(Icons.list, size: 40, color: Colors.white),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
+        ),
+        title: Center(
+          child: Image.asset('assets/pokedex_title.png', width: 140),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: Image.asset('assets/pokeball_icon.png', width: 40),
           ),
         ],
+      ),
+      drawer: SafeArea(
+        child: Drawer(
+          child: Column(
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(color: Colors.red),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Expanded(
+                      child: Center(
+                        child: Image.asset('assets/poke_menu_title.png'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  children: [
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Kanto Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_rounded),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getKantoPokemonData();
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Johto Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              ListTile(
+                trailing: Icon(Icons.settings, size: 20), // 톱니바퀴 아이콘, 작게 설정
+                title: Text('Settings'),
+                tileColor: Colors.black12, // 밝은 회색 배경
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
       ),
       body: Column(
         children: [
