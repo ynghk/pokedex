@@ -125,6 +125,9 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         ],
                       ),
                       onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getJohtoPokemonData();
+                        });
                         Navigator.pop(context);
                       },
                     ),

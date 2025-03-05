@@ -17,6 +17,17 @@ class ApiService {
         .toList();
   }
 
+  Future<List<PokedexEntry>> getJohtoPokemonData() async {
+    final response = await http.get(
+      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+    );
+    final data = jsonDecode(response.body);
+    return (data['pokemon_entries'] as List)
+        .where((e) => e['entry_number'] <= 251 && e['entry_number'] >= 152)
+        .map((e) => PokedexEntry.fromJson(e))
+        .toList();
+  }
+
   // 포켓몬의 정보 불러오기
   Future<PokemonDetail> getPokemonDetail(int id) async {
     final speciesResponse = await http.get(
