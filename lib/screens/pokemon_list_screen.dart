@@ -221,20 +221,20 @@ class KantoPokemonList extends StatelessWidget {
         return SafeArea(
           child: ListView.separated(
             scrollDirection: Axis.vertical,
-            itemCount: filteredPokemons.length, //
+            itemCount: filteredPokemons.length,
             itemBuilder: (context, index) {
               var pokemon = filteredPokemons[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PokedexScreen(pokedex: pokemon),
-                      ),
-                    );
-                  },
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PokedexScreen(pokedex: pokemon),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     children: [
                       Image.network(
