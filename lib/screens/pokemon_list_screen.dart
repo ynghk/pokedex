@@ -12,12 +12,14 @@ class PokemonListScreen extends StatefulWidget {
 
 class _PokemonListScreenState extends State<PokemonListScreen> {
   late Future<List<PokedexEntry>> pokemons;
+  late TextEditingController _controller;
   String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     pokemons = ApiService().getKantoPokemonData();
+    _controller = TextEditingController();
   }
 
   void onSearchChanged(String value) {
@@ -151,6 +153,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _controller,
                     decoration: InputDecoration(
                       hintText: 'Search for Pokemon',
                       enabledBorder: OutlineInputBorder(
@@ -165,6 +168,15 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         vertical: 10,
                         horizontal: 15,
                       ), // 내부 여백 조정
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _controller.clear();
+                            searchQuery = '';
+                          });
+                        },
+                      ),
                     ),
                     onChanged: onSearchChanged,
                   ),
