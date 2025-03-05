@@ -12,7 +12,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.red,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.red,
+          iconTheme: IconThemeData(color: Colors.white), // 모든 AppBar 뒤로가기 색상
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: Colors.redAccent,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.redAccent,
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+      ),
+      themeMode: ThemeMode.system,
       home: PokemonListScreen(),
     );
   }

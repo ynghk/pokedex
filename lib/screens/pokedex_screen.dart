@@ -58,6 +58,9 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            iconTheme: IconThemeData(
+              color: textColor, // 뒤로가기 버튼 색상 (흰색으로 예시)
+            ),
           ),
           body:
               snapshot.connectionState == ConnectionState.waiting
