@@ -55,7 +55,11 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
             title: Text(
               'No.${widget.pokedex.id} ${widget.pokedex.name.capitalize()}',
               style: TextStyle(
-                color: textColor,
+                color:
+                    Theme.of(context).colorScheme.surface.computeLuminance() >
+                            0.5
+                        ? Colors.black
+                        : Colors.white,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -102,6 +106,12 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                   child: Text(
                                     'Height: ${snapshot.data!.height / 10}m, Weight: ${snapshot.data!.weight / 10}kg',
                                     style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.surface
+                                                      .computeLuminance() >
+                                                  0.5
+                                              ? Colors.black
+                                              : Colors.white,
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -150,9 +160,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                             child: Text(
                                               '-Ability-',
                                               style: TextStyle(
+                                                color:
+                                                    Theme.of(context)
+                                                                .colorScheme
+                                                                .surface
+                                                                .computeLuminance() >
+                                                            0.5
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -162,9 +179,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                             child: Text(
                                               snapshot.data!.abilities,
                                               style: TextStyle(
+                                                color:
+                                                    Theme.of(context)
+                                                                .colorScheme
+                                                                .surface
+                                                                .computeLuminance() >
+                                                            0.5
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -198,9 +222,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                             child: Text(
                                               '-Description-',
                                               style: TextStyle(
+                                                color:
+                                                    Theme.of(context)
+                                                                .colorScheme
+                                                                .surface
+                                                                .computeLuminance() >
+                                                            0.5
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -209,9 +240,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                           Text(
                                             snapshot.data!.flavorText,
                                             style: TextStyle(
+                                              color:
+                                                  Theme.of(context)
+                                                              .colorScheme
+                                                              .surface
+                                                              .computeLuminance() >
+                                                          0.5
+                                                      ? Colors.black
+                                                      : Colors.white,
                                               fontSize: 15,
                                               fontWeight: FontWeight.w500,
-                                              color: Colors.black,
                                             ),
                                           ),
                                         ],
@@ -307,9 +345,17 @@ class EvolutionStageWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               '-Evolution-',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color:
+                    Theme.of(context).colorScheme.surface.computeLuminance() >
+                            0.5
+                        ? Colors.black
+                        : Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             if (isEeveeEvolution &&
                 currentPokemonId == base.id) // Eevee 클릭 시 분기형
@@ -327,7 +373,14 @@ class EvolutionStageWidget extends StatelessWidget {
                       ),
                       Text(
                         base.name.capitalize(),
-                        style: const TextStyle(
+                        style: TextStyle(
+                          color:
+                              Theme.of(
+                                        context,
+                                      ).colorScheme.surface.computeLuminance() >
+                                      0.5
+                                  ? Colors.black
+                                  : Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -369,14 +422,28 @@ class EvolutionStageWidget extends StatelessWidget {
                                 ),
                                 Text(
                                   stage.name.capitalize(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.surface
+                                                    .computeLuminance() >
+                                                0.5
+                                            ? Colors.black
+                                            : Colors.white,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   '(${stage.item ?? 'Lv.${stage.minLevel}'})',
-                                  style: const TextStyle(fontSize: 10),
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.surface
+                                                    .computeLuminance() >
+                                                0.5
+                                            ? Colors.black
+                                            : Colors.white,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ],
                             );
@@ -407,7 +474,13 @@ class EvolutionStageWidget extends StatelessWidget {
                               ),
                               Text(
                                 stage.name.capitalize(),
-                                style: const TextStyle(
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.surface
+                                                  .computeLuminance() >
+                                              0.5
+                                          ? Colors.black
+                                          : Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -419,7 +492,15 @@ class EvolutionStageWidget extends StatelessWidget {
                                   ),
                                   child: Text(
                                     '(${stage.item ?? 'Lv.${stage.minLevel}'})',
-                                    style: const TextStyle(fontSize: 10),
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.surface
+                                                      .computeLuminance() >
+                                                  0.5
+                                              ? Colors.black
+                                              : Colors.white,
+                                      fontSize: 10,
+                                    ),
                                   ),
                                 ),
                             ],
