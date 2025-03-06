@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/screens/pokedex_screen.dart';
 import 'package:pokedex_app/services/api_service.dart';
+import 'package:pokedex_app/utils/string_utils.dart';
 
 class PokemonListScreen extends StatefulWidget {
   const PokemonListScreen({super.key});
@@ -14,12 +15,20 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
   late Future<List<PokedexEntry>> pokemons;
   late TextEditingController _controller;
   String searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     pokemons = ApiService().getKantoPokemonData();
     _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _controller.dispose();
+    super.dispose();
   }
 
   void onSearchChanged(String value) {
@@ -102,6 +111,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         setState(() {
                           pokemons = ApiService().getKantoPokemonData();
                         });
+                        _scrollController.jumpTo(0.0);
                         Navigator.pop(context);
                       },
                     ),
@@ -128,6 +138,223 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         setState(() {
                           pokemons = ApiService().getJohtoPokemonData();
                         });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Hoenn Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getHoennPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Sinnoh Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getSinnohPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Unova Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getUnovaPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Kalos Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getKalosPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Alola Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getAlolaPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Galar Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getGalarPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Paldea Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getPaldeaPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(Icons.map_outlined),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Hisui Region',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          Spacer(),
+                          Icon(Icons.chevron_right_outlined),
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          pokemons = ApiService().getHisuiPokemonData();
+                        });
+                        _scrollController.jumpTo(0.0);
                         Navigator.pop(context);
                       },
                     ),
@@ -157,8 +384,26 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    style: TextStyle(
+                      color:
+                          Theme.of(
+                                    context,
+                                  ).colorScheme.surface.computeLuminance() >
+                                  0.5
+                              ? Colors.black
+                              : Colors.white,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Search for Pokemon',
+                      hintStyle: TextStyle(
+                        color:
+                            Theme.of(
+                                      context,
+                                    ).colorScheme.surface.computeLuminance() >
+                                    0.5
+                                ? Colors.grey[600]
+                                : Colors.grey[300],
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide(color: Colors.black, width: 1.0),
@@ -195,10 +440,30 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
             child: KantoPokemonList(
               pokemons: pokemons,
               searchQuery: searchQuery,
+              scrollController: _scrollController,
             ),
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _scrollController.animateTo(
+            0.0,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        backgroundColor: Colors.grey.shade500, // 투명한 야간 느낌
+        elevation: 8.0, // Z-stack 효과 (떠 있는 느낌)
+        shape: CircleBorder(),
+        splashColor: Colors.red.shade300,
+        hoverElevation: 10,
+        child: Icon(
+          Icons.keyboard_double_arrow_up_rounded,
+          color: Colors.white,
+        ), // 원형 버튼
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
@@ -208,10 +473,12 @@ class KantoPokemonList extends StatelessWidget {
     super.key,
     required this.pokemons,
     required this.searchQuery,
+    required this.scrollController,
   });
 
   final Future<List<PokedexEntry>> pokemons;
   final String searchQuery;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -235,6 +502,7 @@ class KantoPokemonList extends StatelessWidget {
             }).toList();
         return SafeArea(
           child: ListView.separated(
+            controller: scrollController,
             scrollDirection: Axis.vertical,
             itemCount: filteredPokemons.length,
             itemBuilder: (context, index) {
@@ -254,7 +522,7 @@ class KantoPokemonList extends StatelessWidget {
                     children: [
                       Image.network(
                         //포켓몬 번호를 url에 파싱 해줌으로써 해당 포켓몬의 이미지를 불러옴
-                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
+                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.getPokemonId()}.png',
                         errorBuilder:
                             (context, error, stackTrace) => Image.asset(
                               'assets/pokeball_error.png',
@@ -270,7 +538,7 @@ class KantoPokemonList extends StatelessWidget {
 
                       //포켓몬 이름 표시해주는 것.
                       Text(
-                        '${pokemon.id}. ${pokemon.name}',
+                        '${pokemon.id}. ${pokemon.name.capitalize()}',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,

@@ -87,8 +87,8 @@ class ShinyPokemon {
   }
 
   //포켓몬id로 이미지 url을 반환
-  String getPokemonImageUrl(PokedexEntry id) {
-    final pokemonId = id.id;
+  String getPokemonImageUrl(PokedexEntry url) {
+    final pokemonId = url.getPokemonId();
     if (isShiny) {
       return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/$pokemonId.png';
     } else {
