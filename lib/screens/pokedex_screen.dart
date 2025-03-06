@@ -6,6 +6,8 @@ import 'package:pokedex_app/models/pokemon_detail.dart';
 import 'package:pokedex_app/services/api_service.dart';
 import 'package:pokedex_app/utils/string_utils.dart';
 
+//테오키스 폼, 기라티나 폼, 변경 구현
+
 class PokedexScreen extends StatefulWidget {
   final PokedexEntry pokedex;
 
