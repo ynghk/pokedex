@@ -123,9 +123,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                   child: RichText(
                                     text: TextSpan(
                                       text: 'Types: ',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 24,
-                                        color: Colors.black,
+                                        color:
+                                            Theme.of(context)
+                                                        .colorScheme
+                                                        .surface
+                                                        .computeLuminance() >
+                                                    0.5
+                                                ? Colors.black
+                                                : Colors.white,
                                         fontWeight: FontWeight.w700,
                                       ),
                                       children:
