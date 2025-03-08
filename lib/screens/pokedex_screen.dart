@@ -56,8 +56,7 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
               'No.${widget.pokedex.id} ${widget.pokedex.name.capitalize()}',
               style: TextStyle(
                 color:
-                    Theme.of(context).colorScheme.surface.computeLuminance() >
-                            0.5
+                    appBarColor.computeLuminance() > 0.5
                         ? Colors.black
                         : Colors.white,
                 fontSize: 30,
@@ -542,12 +541,12 @@ class PokemonImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.grey, width: 2),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(128),
-            spreadRadius: 5,
+            spreadRadius: 3,
             blurRadius: 7,
             offset: const Offset(0, 3),
           ),

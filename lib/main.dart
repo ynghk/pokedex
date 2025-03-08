@@ -5,14 +5,21 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   Color _getTextColorBasedOnBackground(Color backgroundColor) {
     return backgroundColor.computeLuminance() > 0.5
         ? Colors.black
         : Colors.white;
   }
+
+  bool isDarkMode = false;
 
   // This widget is the root of your application.
   @override
@@ -68,8 +75,15 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      themeMode: ThemeMode.system,
-      home: PokemonListScreen(),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: PokemonListScreen(
+        isDarkMode,
+        onThemeChanged: (value) {
+          setState(() {
+            isDarkMode = value;
+          });
+        },
+      ),
     );
   }
 }
