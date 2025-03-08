@@ -6,6 +6,8 @@ import 'package:pokedex_app/models/pokemon_detail.dart';
 import 'package:pokedex_app/services/api_service.dart';
 import 'package:pokedex_app/utils/string_utils.dart';
 
+//테오키스 폼, 기라티나 폼, 변경 구현
+
 class PokedexScreen extends StatefulWidget {
   final PokedexEntry pokedex;
 
@@ -53,10 +55,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
             title: Text(
               'No.${widget.pokedex.id} ${widget.pokedex.name.capitalize()}',
               style: TextStyle(
-                color: textColor,
+                color:
+                    appBarColor.computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+            iconTheme: IconThemeData(
+              color: textColor, // 뒤로가기 버튼 색상 (흰색으로 예시)
             ),
           ),
           body:
@@ -97,6 +105,12 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                   child: Text(
                                     'Height: ${snapshot.data!.height / 10}m, Weight: ${snapshot.data!.weight / 10}kg',
                                     style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.surface
+                                                      .computeLuminance() >
+                                                  0.5
+                                              ? Colors.black
+                                              : Colors.white,
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -108,9 +122,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                   child: RichText(
                                     text: TextSpan(
                                       text: 'Types: ',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 24,
-                                        color: Colors.black,
+                                        color:
+                                            Theme.of(context)
+                                                        .colorScheme
+                                                        .surface
+                                                        .computeLuminance() >
+                                                    0.5
+                                                ? Colors.black
+                                                : Colors.white,
                                         fontWeight: FontWeight.w700,
                                       ),
                                       children:
@@ -145,9 +166,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                             child: Text(
                                               '-Ability-',
                                               style: TextStyle(
+                                                color:
+                                                    Theme.of(context)
+                                                                .colorScheme
+                                                                .surface
+                                                                .computeLuminance() >
+                                                            0.5
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -157,9 +185,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                             child: Text(
                                               snapshot.data!.abilities,
                                               style: TextStyle(
+                                                color:
+                                                    Theme.of(context)
+                                                                .colorScheme
+                                                                .surface
+                                                                .computeLuminance() >
+                                                            0.5
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -193,9 +228,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                             child: Text(
                                               '-Description-',
                                               style: TextStyle(
+                                                color:
+                                                    Theme.of(context)
+                                                                .colorScheme
+                                                                .surface
+                                                                .computeLuminance() >
+                                                            0.5
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -204,9 +246,16 @@ class _PokemonDetailScreenState extends State<PokedexScreen> {
                                           Text(
                                             snapshot.data!.flavorText,
                                             style: TextStyle(
+                                              color:
+                                                  Theme.of(context)
+                                                              .colorScheme
+                                                              .surface
+                                                              .computeLuminance() >
+                                                          0.5
+                                                      ? Colors.black
+                                                      : Colors.white,
                                               fontSize: 15,
                                               fontWeight: FontWeight.w500,
-                                              color: Colors.black,
                                             ),
                                           ),
                                         ],
@@ -302,9 +351,17 @@ class EvolutionStageWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               '-Evolution-',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color:
+                    Theme.of(context).colorScheme.surface.computeLuminance() >
+                            0.5
+                        ? Colors.black
+                        : Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             if (isEeveeEvolution &&
                 currentPokemonId == base.id) // Eevee 클릭 시 분기형
@@ -322,7 +379,14 @@ class EvolutionStageWidget extends StatelessWidget {
                       ),
                       Text(
                         base.name.capitalize(),
-                        style: const TextStyle(
+                        style: TextStyle(
+                          color:
+                              Theme.of(
+                                        context,
+                                      ).colorScheme.surface.computeLuminance() >
+                                      0.5
+                                  ? Colors.black
+                                  : Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -364,14 +428,28 @@ class EvolutionStageWidget extends StatelessWidget {
                                 ),
                                 Text(
                                   stage.name.capitalize(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.surface
+                                                    .computeLuminance() >
+                                                0.5
+                                            ? Colors.black
+                                            : Colors.white,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   '(${stage.item ?? 'Lv.${stage.minLevel}'})',
-                                  style: const TextStyle(fontSize: 10),
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.surface
+                                                    .computeLuminance() >
+                                                0.5
+                                            ? Colors.black
+                                            : Colors.white,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ],
                             );
@@ -402,7 +480,13 @@ class EvolutionStageWidget extends StatelessWidget {
                               ),
                               Text(
                                 stage.name.capitalize(),
-                                style: const TextStyle(
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.surface
+                                                  .computeLuminance() >
+                                              0.5
+                                          ? Colors.black
+                                          : Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -414,7 +498,15 @@ class EvolutionStageWidget extends StatelessWidget {
                                   ),
                                   child: Text(
                                     '(${stage.item ?? 'Lv.${stage.minLevel}'})',
-                                    style: const TextStyle(fontSize: 10),
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.surface
+                                                      .computeLuminance() >
+                                                  0.5
+                                              ? Colors.black
+                                              : Colors.white,
+                                      fontSize: 10,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -449,12 +541,12 @@ class PokemonImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.grey, width: 2),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(128),
-            spreadRadius: 5,
+            spreadRadius: 3,
             blurRadius: 7,
             offset: const Offset(0, 3),
           ),

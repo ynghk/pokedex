@@ -65,10 +65,11 @@ flutter:
   - assets/gottacatchemall_logo.png
   - assets/pokeball_icon.png
   - assets/pokeball_error.png
-  - assets/Pokédex_logo.png
+  - assets/pokedex_title.png
   - assets/pokeball_icon_shade.png
   - assets/shiny_off_icon.png
   - assets/shiny_on_icon.png
+  - assets/poke_menu_title.png
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
