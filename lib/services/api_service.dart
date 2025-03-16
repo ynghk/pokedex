@@ -3,13 +3,31 @@ import 'package:http/http.dart' as http;
 import 'package:pokedex_app/models/evolution_stage.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/models/pokemon_detail.dart';
+import 'package:pokedex_app/models/pokemon_type_colors.dart';
 
 class ApiService {
   // 관동기방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getKantoPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getKantoPokemonData({int retries = 3}) async {
+    late http.Response response; // response를 루프 밖에서 선언
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
         .where((e) => e['entry_number'] <= 151) // 관동만 필터링
@@ -18,109 +36,262 @@ class ApiService {
   }
 
   // 성도지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getJohtoPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getJohtoPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 251 && e['entry_number'] >= 152)
+        .where((e) => e['entry_number'] <= 251 && e['entry_number'] >= 152) // 성도만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 호연지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getHoennPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getHoennPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 386 && e['entry_number'] >= 252)
+        .where((e) => e['entry_number'] <= 386 && e['entry_number'] >= 252) // 호연만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 신오지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getSinnohPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getSinnohPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 493 && e['entry_number'] >= 387)
+        .where((e) => e['entry_number'] <= 493 && e['entry_number'] >= 387) // 신오만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 하나지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getUnovaPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getUnovaPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 649 && e['entry_number'] >= 494)
+        .where((e) => e['entry_number'] <= 649 && e['entry_number'] >= 494) // 하나만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 칼로스지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getKalosPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getKalosPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 721 && e['entry_number'] >= 650)
+        .where((e) => e['entry_number'] <= 721 && e['entry_number'] >= 650) // 칼로스만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 알로라지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getAlolaPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getAlolaPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 809 && e['entry_number'] >= 722)
+        .where((e) => e['entry_number'] <= 809 && e['entry_number'] >= 722) // 알로라만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 가라르지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getGalarPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getGalarPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 898 && e['entry_number'] >= 810)
+        .where((e) => e['entry_number'] <= 898 && e['entry_number'] >= 810) // 가라르만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   // 히스이지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getHisuiPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getHisuiPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 905 && e['entry_number'] >= 899)
+        .where((e) => e['entry_number'] <= 905 && e['entry_number'] >= 899) // 히스이만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
 
   //팔데아지방 포켓몬 불러오기
-  Future<List<PokedexEntry>> getPaldeaPokemonData() async {
-    final response = await http.get(
-      Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
-    );
+  Future<List<PokedexEntry>> getPaldeaPokemonData({int retries = 3}) async {
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http.get(
+          Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'),
+        );
+        if (response.statusCode == 200) {
+          // 성공 시 루프 종료
+          break;
+        } else {
+          throw Exception('Failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (i == retries - 1) {
+          // 마지막 시도에서도 실패하면 에러 던짐
+          rethrow;
+        }
+        await Future.delayed(Duration(seconds: 1)); // 1초 대기 후 재시도
+      }
+    }
     final data = jsonDecode(response.body);
     return (data['pokemon_entries'] as List)
-        .where((e) => e['entry_number'] <= 1010 && e['entry_number'] >= 906)
+        .where((e) => e['entry_number'] <= 1010 && e['entry_number'] >= 906) // 팔데아만 필터링
         .map((e) => PokedexEntry.fromJson(e))
         .toList();
   }
@@ -149,16 +320,29 @@ class ApiService {
           )['flavor_text']
           .toString()
           .replaceAll('\n', ' ');
-      final abilityList = (pokemonData['abilities'] as List)
-          .map((ability) => ability['ability']['name'] as String)
-          .join(', ');
+
+      // 일반 어빌리티와 히든 어빌리티 분리
+      final regularAbilities = <String>[];
+      final hiddenAbilities = <String>[];
+
+      for (var ability in pokemonData['abilities'] as List) {
+        final name = ability['ability']['name'] as String;
+        final isHidden = ability['is_hidden'] as bool;
+
+        if (isHidden) {
+          hiddenAbilities.add(name.capitalize());
+        } else {
+          regularAbilities.add(name.capitalize());
+        }
+      }
 
       return PokemonDetail(
         height: height,
         weight: weight,
         types: types,
         flavorText: flavorText,
-        abilities: abilityList,
+        regularAbilities: regularAbilities,
+        hiddenAbilities: hiddenAbilities,
       );
     } else {
       throw Exception('Failed to load Pokémon detail');
@@ -195,5 +379,10 @@ class ApiService {
 
     parseChain(chainData);
     return stages;
+  }
+
+  @override
+  Future<List<EvolutionStage>> getEvolutionStages(int pokemonId) {
+    return getEvolutionChainForPokemon(pokemonId);
   }
 }

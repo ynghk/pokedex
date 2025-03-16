@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pokedex_app/models/pokemon_type_colors.dart';
+import 'package:pokedex_app/repositories/pokemon_repository.dart';
 import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
-import 'package:pokedex_app/views/screens/pokedex_screen.dart';
-import 'package:pokedex_app/utils/string_utils.dart';
 import 'package:provider/provider.dart';
 
 class PokemonListScreen extends StatefulWidget {
@@ -50,8 +50,9 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final repository = Provider.of<PokemonRepository>(context, listen: false);
     return ChangeNotifierProvider(
-      create: (_) => PokemonListViewModel()..loadPokemons('Kanto'),
+      create: (_) => PokemonListViewModel(repository)..loadPokemons('Kanto'),
       child: Consumer<PokemonListViewModel>(
         builder: (context, viewModel, child) {
           if (_controller.text != viewModel.searchQuery) {
@@ -88,38 +89,40 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
               drawer: SafeArea(
                 child: Drawer(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SizedBox(
-                        height: 100,
-                        child: DrawerHeader(
-                          decoration: BoxDecoration(color: Colors.red),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.close_rounded,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
+                      Container(
+                        height: 120,
+                        decoration: viewModel.getDrawerHeaderDecoration(),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                                size: 30,
                               ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
 
-                              Expanded(
-                                child: Center(
-                                  child: Image.asset(
-                                    'assets/poke_menu_title.png',
-                                    fit: BoxFit.fill,
-                                  ),
+                            Expanded(
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/poke_menu_title.png',
+                                  fit: BoxFit.fill,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
+
+                      Divider(height: 1, color: Colors.grey),
                       Expanded(
                         child: ListView(
+                          padding: EdgeInsets.zero,
                           children: [
                             ListTile(
                               leading: Icon(Icons.map_outlined),
@@ -127,21 +130,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Kanto Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Kanto',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_rounded),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Kanto')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Kanto');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Kanto',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -152,21 +161,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Johto Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Johto',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Johto')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Johto');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Johto',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -177,21 +192,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Hoenn Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Hoenn',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Hoenn')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Hoenn');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Hoenn',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -202,21 +223,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Sinnoh Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Sinnoh',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Sinnoh')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Sinnoh');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Sinnoh',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -227,21 +254,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Unova Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Unova',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Unova')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Unova');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Unova',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -252,21 +285,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Kalos Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Kalos',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Kalos')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Kalos');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Kalos',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -277,21 +316,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Alola Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Alola',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Alola')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Alola');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Alola',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -302,21 +347,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Galar Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Galar',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Galar')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Galar');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Galar',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -327,21 +378,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Paldea Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Paldea',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Paldea')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Paldea');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Paldea',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
 
                             Divider(height: 1, color: Colors.grey),
@@ -352,21 +409,27 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 children: [
                                   Text(
                                     'Hisui Region',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
+                                    style: viewModel.getRegionTextColor(
+                                      'Hisui',
                                     ),
                                   ),
 
                                   Spacer(),
-                                  Icon(Icons.chevron_right_outlined),
+                                  Icon(
+                                    Icons.chevron_right_outlined,
+                                    color:
+                                        viewModel
+                                            .getRegionTextColor('Hisui')
+                                            ?.color,
+                                  ),
                                 ],
                               ),
-                              onTap: () {
-                                viewModel.loadPokemons('Hisui');
-                                _scrollToTop();
-                                Navigator.pop(context);
-                              },
+                              onTap:
+                                  () => viewModel.selectRegion(
+                                    'Hisui',
+                                    _scrollToTop,
+                                    context,
+                                  ),
                             ),
                           ],
                         ),
@@ -377,118 +440,13 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                           size: 20,
                         ), // 톱니바퀴 아이콘, 작게 설정
                         title: Text('Settings'),
-                        tileColor:
-                            Theme.of(
-                                      context,
-                                    ).colorScheme.surface.computeLuminance() >
-                                    0.5
-                                ? Colors.black12
-                                : Colors.grey.shade800,
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder:
-                                (context) => AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  titlePadding: EdgeInsets.all(0),
-                                  title: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(12),
-                                        topRight: Radius.circular(12),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20.0,
-                                        vertical: 5,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Settings',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.close,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed:
-                                                () => Navigator.pop(context),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  content: Column(
-                                    spacing: 10,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'Dark Mode',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-
-                                          Spacer(),
-                                          Switch(
-                                            value: widget.isDarkMode,
-                                            onChanged: widget.onThemeChanged,
-                                          ),
-                                        ],
-                                      ),
-                                      Divider(height: 1, color: Colors.grey),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'Language',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-
-                                          Spacer(),
-                                          DropdownButton<String>(
-                                            value: viewModel.selectedLanguage,
-                                            items:
-                                                ['English', 'Korean'].map((
-                                                  String lang,
-                                                ) {
-                                                  return DropdownMenuItem<
-                                                    String
-                                                  >(
-                                                    value: lang,
-                                                    child: Text(lang),
-                                                  );
-                                                }).toList(),
-                                            onChanged: (String? newValue) {
-                                              viewModel.updateLanguage(
-                                                newValue!,
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                          );
-                        },
+                        tileColor: viewModel.getSettingsTileColor(context),
+                        onTap:
+                            () => viewModel.showSettingsDialog(
+                              context,
+                              widget.isDarkMode,
+                              widget.onThemeChanged,
+                            ),
                       ),
                     ],
                   ),
@@ -506,60 +464,8 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                           child: TextField(
                             controller: _controller,
                             onChanged: viewModel.updateSearchQuery,
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).colorScheme.surface
-                                              .computeLuminance() >
-                                          0.5
-                                      ? Colors.black
-                                      : Colors.white,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Search for Pokemon',
-                              hintStyle: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.surface
-                                                .computeLuminance() >
-                                            0.5
-                                        ? Colors.grey[600]
-                                        : Colors.grey[300],
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                borderSide: BorderSide(
-                                  color:
-                                      Theme.of(context).colorScheme.surface
-                                                  .computeLuminance() >
-                                              0.5
-                                          ? Colors.black
-                                          : Colors.white,
-                                  width: 1.0,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                borderSide: BorderSide(
-                                  color:
-                                      Theme.of(context).colorScheme.surface
-                                                  .computeLuminance() >
-                                              0.5
-                                          ? Colors.black
-                                          : Colors.white,
-                                  width: 2.0,
-                                ),
-                              ),
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 15,
-                              ), // 내부 여백 조정
-                              suffixIcon: IconButton(
-                                icon: Icon(Icons.clear),
-                                onPressed: () {
-                                  _controller.clear();
-                                  viewModel.clearSearch();
-                                },
-                              ),
-                            ),
+                            style: viewModel.getSearchTextStyle(context),
+                            decoration: viewModel.getSearchDecoration(context),
                           ),
                         ),
                       ],
@@ -568,21 +474,55 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
 
                   SizedBox(height: 12),
                   Expanded(
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (notification) {
-                        if (notification is ScrollUpdateNotification) {
-                          if (notification.scrollDelta != null &&
-                              notification.scrollDelta! < 0 &&
-                              FocusScope.of(context).hasFocus) {
-                            FocusScope.of(context).unfocus(); // 위로 스크롤 시 키보드 닫기
-                          }
-                        }
-                        return false; // 이벤트 전파 유지
+                    child: RefreshIndicator(
+                      backgroundColor:
+                          widget.isDarkMode
+                              ? Colors.grey.shade800
+                              : Colors.white,
+                      color: Colors.red,
+                      onRefresh: () async {
+                        // 새로고침 시 현재 지역 데이터 다시 로드
+                        await viewModel.loadPokemons(viewModel.selectedRegion);
                       },
-                      child: KantoPokemonList(
-                        viewModel: viewModel,
-                        scrollController: _scrollController,
-                      ),
+                      child:
+                          viewModel.isLoading
+                              ? Center(
+                                child: Image.asset(
+                                  'assets/pokeball_spin.gif',
+                                  width: 300,
+                                  height: 300,
+                                ),
+                              )
+                              : viewModel.error != null
+                              ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('Error: ${viewModel.error}'),
+                                    SizedBox(height: 10),
+                                    Text('위로 당겨서 새로고침 해주세요'),
+                                  ],
+                                ),
+                              )
+                              : NotificationListener<ScrollNotification>(
+                                onNotification: (notification) {
+                                  if (notification
+                                      is ScrollUpdateNotification) {
+                                    if (notification.scrollDelta != null &&
+                                        notification.scrollDelta! < 0 &&
+                                        FocusScope.of(context).hasFocus) {
+                                      FocusScope.of(
+                                        context,
+                                      ).unfocus(); // 위로 스크롤 시 키보드 닫기
+                                    }
+                                  }
+                                  return false; // 이벤트 전파 유지
+                                },
+                                child: KantoPokemonList(
+                                  viewModel: viewModel,
+                                  scrollController: _scrollController,
+                                ),
+                              ),
                     ),
                   ),
                 ],
@@ -623,25 +563,19 @@ class KantoPokemonList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
       controller: scrollController,
+      physics: AlwaysScrollableScrollPhysics(),
       itemCount: viewModel.filteredPokemons.length,
       itemBuilder: (context, index) {
         var pokemon = viewModel.filteredPokemons[index];
         return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PokedexScreen(pokedex: pokemon),
-              ),
-            );
-          },
+          onTap: () => viewModel.navigateToDetail(context, pokemon),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: viewModel.getListItemPadding(),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Image.network(
-                  //포켓몬 번호를 url에 파싱 해줌으로써 해당 포켓몬의 이미지를 불러옴
-                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.getPokemonId()}.png',
+                  viewModel.getPokemonImageUrl(pokemon.getPokemonId()),
                   errorBuilder:
                       (context, error, stackTrace) => Image.asset(
                         'assets/pokeball_error.png',
@@ -653,17 +587,17 @@ class KantoPokemonList extends StatelessWidget {
                   fit: BoxFit.contain,
                 ),
 
-                SizedBox(width: 20),
-
                 //포켓몬 이름 표시해주는 것.
                 Text(
                   '${pokemon.id}. ${pokemon.name.capitalize()}',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: viewModel.getListItemStyle(),
                 ),
 
                 Spacer(),
 
-                Icon(Icons.chevron_right_rounded, size: 25),
+                viewModel.buildTypeChips(pokemon.getPokemonId(), context),
+
+                Icon(Icons.chevron_right_rounded, size: 20),
               ],
             ),
           ),
@@ -671,10 +605,7 @@ class KantoPokemonList extends StatelessWidget {
       },
       //ListView.separated에 list간의 구분 짓는 부분
       separatorBuilder:
-          (context, index) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Divider(height: 1, color: Colors.grey),
-          ),
+          (context, index) => Divider(height: 1, color: Colors.grey),
     );
   }
 }

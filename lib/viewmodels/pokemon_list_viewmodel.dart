@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/services/api_service.dart';
+import 'package:pokedex_app/models/pokemon_type_colors.dart';
+import 'package:pokedex_app/repositories/pokemon_repository.dart';
+import 'package:pokedex_app/views/screens/pokedex_screen.dart';
+import 'package:provider/provider.dart';
 
 class PokemonListViewModel with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final PokemonRepository _repository;
   List<PokedexEntry> _pokemons = [];
   String _searchQuery = '';
   String _selectedRegion = 'Kanto'; // 기본 지역
   String _selectedLanguage = 'English';
-  String get selectedLanguage => _selectedLanguage;
+  bool _isDarkMode = false; // 다크모드 상태 추가
+  bool isLoading = true;
+  String? error; // 에러 상태 추가
 
+  // 생성자 변경
+  PokemonListViewModel(this._repository);
+  // Getters
   List<PokedexEntry> get pokemons => _pokemons;
   String get searchQuery => _searchQuery;
   String get selectedRegion => _selectedRegion;
+  String get selectedLanguage => _selectedLanguage;
+  bool get isDarkMode => _isDarkMode;
 
   // 필터링된 포켓몬 리스트
   List<PokedexEntry> get filteredPokemons =>
@@ -22,44 +32,84 @@ class PokemonListViewModel with ChangeNotifier {
           )
           .toList();
 
+  final Map<int, List<String>> _typeCache = {};
+
+  Future<List<String>> getPokemonTypes(int pokemonId) async {
+    // 캐시에 있으면 캐시에서 반환
+    if (_typeCache.containsKey(pokemonId)) {
+      return _typeCache[pokemonId]!;
+    }
+
+    final detail = await _repository.getPokemonDetail(pokemonId);
+    _typeCache[pokemonId] = detail.types; // 캐시에 저장
+    return detail.types;
+  }
+
+  Widget buildTypeChips(int pokemonId, BuildContext context) {
+    return FutureBuilder<List<String>>(
+      future: getPokemonTypes(pokemonId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox(width: 60, height: 20); // 로딩 중 빈 공간
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox(width: 60, height: 20); // 데이터 없을 때 빈 공간
+        }
+
+        // 타입 칩 생성
+        final types = snapshot.data!;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children:
+              types
+                  .map(
+                    (type) => Padding(
+                      padding: const EdgeInsets.only(right: 3.0),
+                      child: Chip(
+                        label: Text(
+                          getPokemonType(type),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                getTypeColor(type).computeLuminance() > 0.5
+                                    ? Colors.black
+                                    : Colors.white,
+                          ),
+                        ),
+                        backgroundColor: getTypeColor(type),
+                        labelPadding: EdgeInsets.symmetric(horizontal: 4),
+                        padding: EdgeInsets.all(0),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  )
+                  .toList(),
+        );
+      },
+    );
+  }
+
+  // 포켓몬 타입 이름 가져오기
+  String getPokemonType(String type) {
+    return type.capitalize();
+  }
+
   // 지역별 데이터 로드
   Future<void> loadPokemons(String region) async {
-    _selectedRegion = region;
-    switch (region) {
-      case 'Kanto':
-        _pokemons = await _apiService.getKantoPokemonData();
-        break;
-      case 'Johto':
-        _pokemons = await _apiService.getJohtoPokemonData();
-        break;
-      case 'Hoenn':
-        _pokemons = await _apiService.getHoennPokemonData();
-        break;
-      case 'Sinnoh':
-        _pokemons = await _apiService.getSinnohPokemonData();
-        break;
-      case 'Unova':
-        _pokemons = await _apiService.getUnovaPokemonData();
-        break;
-      case 'Kalos':
-        _pokemons = await _apiService.getKalosPokemonData();
-        break;
-      case 'Alola':
-        _pokemons = await _apiService.getAlolaPokemonData();
-        break;
-      case 'Galar':
-        _pokemons = await _apiService.getGalarPokemonData();
-        break;
-      case 'Paldea':
-        _pokemons = await _apiService.getPaldeaPokemonData();
-        break;
-      case 'Hisui':
-        _pokemons = await _apiService.getHisuiPokemonData();
-        break;
-      default:
-        _pokemons = await _apiService.getKantoPokemonData();
-    }
+    isLoading = true;
+    error = null; // 새로고침 시 에러 초기화
     notifyListeners();
+    try {
+      _pokemons = await _repository.getPokemonsByRegion(region);
+      _selectedRegion = region;
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void updateLanguage(String newLanguage) {
@@ -77,5 +127,270 @@ class PokemonListViewModel with ChangeNotifier {
   void clearSearch() {
     _searchQuery = '';
     notifyListeners();
+  }
+
+  // UI 관련 메서드들
+  BoxDecoration getDrawerHeaderDecoration() {
+    return const BoxDecoration(color: Colors.red);
+  }
+
+  TextStyle getRegionTextStyle() {
+    return const TextStyle(fontSize: 20, fontWeight: FontWeight.w600);
+  }
+
+  // 선택된 지역을 빨간색으로 표시
+  TextStyle? getRegionTextColor(String region) {
+    return region == _selectedRegion
+        ? const TextStyle(
+          color: Colors.red,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        )
+        : TextStyle(
+          color: _isDarkMode ? Colors.white : Colors.black,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        );
+  }
+
+  TextStyle getSearchTextStyle(BuildContext context) {
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+    return TextStyle(color: isDark ? Colors.white : Colors.black);
+  }
+
+  InputDecoration getSearchDecoration(BuildContext context) {
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+    return InputDecoration(
+      hintText: 'Search for Pokemon',
+      hintStyle: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600]),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: isDark ? Colors.white : Colors.black,
+          width: 1.0,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: isDark ? Colors.white : Colors.black,
+          width: 2.0,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      suffixIcon: IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          clearSearch();
+        },
+      ),
+    );
+  }
+
+  // 설정 타일 색상 반환
+  Color getSettingsTileColor(BuildContext context) {
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+    return isDark ? Colors.grey.shade800 : Colors.black12;
+  }
+
+  // 포켓몬 타입 색상 반환
+  Color getTypeColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'normal':
+        return Color(0xFFA8A77A);
+      case 'fire':
+        return Color(0xFFEE8130);
+      case 'water':
+        return Color(0xFF6390F0);
+      case 'electric':
+        return Color(0xFFF7D02C);
+      case 'grass':
+        return Color(0xFF7AC74C);
+      case 'ice':
+        return Color(0xFF96D9D6);
+      case 'fighting':
+        return Color(0xFFC22E28);
+      case 'poison':
+        return Color(0xFFA33EA1);
+      case 'ground':
+        return Color(0xFFE2BF65);
+      case 'flying':
+        return Color(0xFFA98FF3);
+      case 'psychic':
+        return Color(0xFFF95587);
+      case 'bug':
+        return Color(0xFFA6B91A);
+      case 'rock':
+        return Color(0xFFB6A136);
+      case 'ghost':
+        return Color(0xFF735797);
+      case 'dragon':
+        return Color(0xFF6F35FC);
+      case 'dark':
+        return Color(0xFF705746);
+      case 'steel':
+        return Color(0xFFB7B7CE);
+      case 'fairy':
+        return Color(0xFFD685AD);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // 설정 다이얼로그 스타일
+  BoxDecoration getSettingsHeaderDecoration() {
+    return const BoxDecoration(
+      color: Colors.red,
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(10),
+        topRight: Radius.circular(10),
+      ),
+    );
+  }
+
+  TextStyle getSettingsTitleStyle() {
+    return const TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+      color: Colors.white,
+    );
+  }
+
+  TextStyle getSettingsItemStyle() {
+    return const TextStyle(fontSize: 15, fontWeight: FontWeight.bold);
+  }
+
+  // 리스트 아이템 포켓몬 이름 스타일
+  TextStyle getListItemStyle() {
+    return const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  }
+
+  EdgeInsets getListItemPadding() {
+    return const EdgeInsets.symmetric(horizontal: 5);
+  }
+
+  String getPokemonImageUrl(int pokemonId) {
+    return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokemonId.png';
+  }
+
+  // 네비게이션 메서드
+  void navigateToDetail(BuildContext context, PokedexEntry pokemon) {
+    final repository = Provider.of<PokemonRepository>(context, listen: false);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => Provider<PokemonRepository>.value(
+              value: repository,
+              child: PokedexScreen(pokedex: pokemon, isDarkMode: _isDarkMode),
+            ),
+      ),
+    );
+  }
+
+  // 지역 선택 처리
+  void selectRegion(
+    String region,
+    VoidCallback scrollToTop,
+    BuildContext context,
+  ) {
+    loadPokemons(region);
+    scrollToTop();
+    Navigator.pop(context);
+  }
+
+  // 다크모드 상태 초기화
+  void initDarkMode(bool isDark) {
+    _isDarkMode = isDark;
+    notifyListeners();
+  }
+
+  // 다크모드 토글
+  void toggleDarkMode(bool value, Function(bool) onThemeChanged) {
+    _isDarkMode = value;
+    onThemeChanged(value);
+    notifyListeners();
+  }
+
+  // 설정 다이얼로그 표시
+  void showSettingsDialog(
+    BuildContext context,
+    bool isDarkMode,
+    Function(bool) onThemeChanged,
+  ) {
+    // 다이얼로그가 열릴 때 현재 다크모드 상태 동기화
+    initDarkMode(isDarkMode);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            titlePadding: EdgeInsets.zero,
+            title: Container(
+              decoration: getSettingsHeaderDecoration(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 5,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Settings', style: getSettingsTitleStyle()),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text('Dark Mode', style: getSettingsItemStyle()),
+                    const Spacer(),
+                    Switch(
+                      activeColor: Colors.red,
+                      value: _isDarkMode, // ViewModel의 상태 사용
+                      onChanged:
+                          (value) => toggleDarkMode(value, onThemeChanged),
+                    ),
+                  ],
+                ),
+                const Divider(height: 1, color: Colors.grey),
+                Row(
+                  children: [
+                    Text('Language', style: getSettingsItemStyle()),
+                    const Spacer(),
+                    DropdownButton<String>(
+                      value: selectedLanguage,
+                      items:
+                          ['English', '한국어'].map((String lang) {
+                            return DropdownMenuItem<String>(
+                              value: lang,
+                              child: Text(lang),
+                            );
+                          }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          updateLanguage(newValue);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+    );
   }
 }
