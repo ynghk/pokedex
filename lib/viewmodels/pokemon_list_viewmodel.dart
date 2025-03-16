@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 class PokemonListViewModel with ChangeNotifier {
   final PokemonRepository _repository;
+  List<PokedexEntry> _allPokemons = [];
   List<PokedexEntry> _pokemons = [];
   String _searchQuery = '';
   String _selectedRegion = 'Kanto'; // 기본 지역
@@ -14,10 +15,17 @@ class PokemonListViewModel with ChangeNotifier {
   bool _isDarkMode = false; // 다크모드 상태 추가
   bool isLoading = true;
   String? error; // 에러 상태 추가
+  final TextEditingController _textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  final Map<int, List<String>> typeCache = {};
 
   // 생성자 변경
   PokemonListViewModel(this._repository);
+
   // Getters
+  TextEditingController get textController => _textController;
+  ScrollController get scrollController => _scrollController;
   List<PokedexEntry> get pokemons => _pokemons;
   String get searchQuery => _searchQuery;
   String get selectedRegion => _selectedRegion;
@@ -26,22 +34,125 @@ class PokemonListViewModel with ChangeNotifier {
 
   // 필터링된 포켓몬 리스트
   List<PokedexEntry> get filteredPokemons =>
-      _pokemons
-          .where(
-            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
-          )
-          .toList();
+      _searchQuery.isEmpty
+          ? _pokemons
+          : _allPokemons
+              .where(
+                (p) =>
+                    p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+              )
+              .toList();
 
-  final Map<int, List<String>> _typeCache = {};
+  void scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0.0,
+        duration: Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      print('ScrollController is not attached to any scroll views.');
+    }
+  }
+
+  VoidCallback unfocusKeyboard(BuildContext context) {
+    return () {
+      if (!FocusScope.of(context).hasFocus) return;
+      FocusScope.of(context).unfocus();
+    };
+  }
+
+  bool Function(ScrollNotification) handleScrollNotification(
+    BuildContext context,
+  ) {
+    return (ScrollNotification notification) {
+      if (notification is ScrollUpdateNotification) {
+        if (notification.scrollDelta != null &&
+            notification.scrollDelta! < 0 &&
+            FocusScope.of(context).hasFocus) {
+          FocusScope.of(context).unfocus();
+        }
+      }
+      return false;
+    };
+  }
+
+  // 초기 Kanto 지방 로드
+  Future<void> loadInitialPokemons() async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    try {
+      _allPokemons = await _repository.getPokemonsByRegion('Kanto');
+      _pokemons =
+          _allPokemons
+              .where((p) => _getRegionForPokemon(p.id) == _selectedRegion)
+              .toList();
+      print('Initial load: ${_pokemons.length} pokemons for $_selectedRegion');
+      print('Total loaded: ${_allPokemons.length}');
+      if (_allPokemons.length < 1025) {
+        print('Warning: Not all pokemons loaded, expected 1025');
+      }
+    } catch (e) {
+      error = e.toString();
+      print('Error loading initial pokemons: $e');
+      print('Stacktrace: ${StackTrace.current}');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 지역 선택
+  void selectRegion(
+    String region,
+    VoidCallback scrollToTop,
+    BuildContext context,
+  ) async {
+    _selectedRegion = region;
+    isLoading = true;
+    notifyListeners();
+    try {
+      if (_allPokemons.length < 1025 && region != 'Kanto') {
+        _allPokemons = await _repository.getPokemonsByRegion(region); // 전체 로드
+      }
+      _pokemons =
+          _allPokemons
+              .where((p) => _getRegionForPokemon(p.id) == region)
+              .toList();
+      print('Selected $region - Pokemons: ${_pokemons.length}');
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+      scrollToTop();
+      Navigator.pop(context);
+    }
+  }
+
+  String _getRegionForPokemon(int id) {
+    if (id <= 151) return 'Kanto';
+    if (id <= 251) return 'Johto';
+    if (id <= 386) return 'Hoenn';
+    if (id <= 493) return 'Sinnoh';
+    if (id <= 649) return 'Unova';
+    if (id <= 721) return 'Kalos';
+    if (id <= 809) return 'Alola';
+    if (id <= 898) return 'Galar';
+    if (id <= 905) return 'Hisui';
+    if (id <= 1010) return 'Paldea';
+    return 'Paldea';
+  }
 
   Future<List<String>> getPokemonTypes(int pokemonId) async {
     // 캐시에 있으면 캐시에서 반환
-    if (_typeCache.containsKey(pokemonId)) {
-      return _typeCache[pokemonId]!;
+    if (typeCache.containsKey(pokemonId)) {
+      return typeCache[pokemonId]!;
     }
 
     final detail = await _repository.getPokemonDetail(pokemonId);
-    _typeCache[pokemonId] = detail.types; // 캐시에 저장
+    typeCache[pokemonId] = detail.types; // 캐시에 저장
     return detail.types;
   }
 
@@ -94,22 +205,6 @@ class PokemonListViewModel with ChangeNotifier {
   // 포켓몬 타입 이름 가져오기
   String getPokemonType(String type) {
     return type.capitalize();
-  }
-
-  // 지역별 데이터 로드
-  Future<void> loadPokemons(String region) async {
-    isLoading = true;
-    error = null; // 새로고침 시 에러 초기화
-    notifyListeners();
-    try {
-      _pokemons = await _repository.getPokemonsByRegion(region);
-      _selectedRegion = region;
-    } catch (e) {
-      error = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
   }
 
   void updateLanguage(String newLanguage) {
@@ -289,17 +384,6 @@ class PokemonListViewModel with ChangeNotifier {
             ),
       ),
     );
-  }
-
-  // 지역 선택 처리
-  void selectRegion(
-    String region,
-    VoidCallback scrollToTop,
-    BuildContext context,
-  ) {
-    loadPokemons(region);
-    scrollToTop();
-    Navigator.pop(context);
   }
 
   // 다크모드 상태 초기화
