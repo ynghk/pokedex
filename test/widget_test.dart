@@ -9,11 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pokedex_app/main.dart';
+import 'package:pokedex_app/repositories/pokemon_repository.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    final repository = PokemonRepository();
+
+    await tester.pumpWidget(MyApp(repository: repository)); 
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

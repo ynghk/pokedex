@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/models/pokemon_detail.dart';
 
 final pokemonTypeColors = {
-  'grass': Colors.green,
-  'poison': Colors.purple,
-  'fire': Colors.red,
-  'water': Colors.blue,
-  'electric': Colors.yellow,
-  'ice': Colors.cyan,
-  'fighting': Colors.orange,
-  'psychic': Colors.pink,
-  'rock': Colors.brown,
-  'ground': Colors.brown[700]!,
-  'flying': Colors.lightBlue,
-  'bug': Colors.lightGreen,
-  'normal': Colors.grey,
-  'ghost': Colors.deepPurple,
-  'steel': Colors.grey[600]!,
-  'dragon': Colors.indigo,
-  'dark': Colors.black87,
-  'fairy': Colors.pink[200]!,
+  'grass': Color(0xFF7AC74C),
+  'poison': Color(0xFFA33EA1),
+  'fire': Color(0xFFEE8130),
+  'water': Color(0xFF6390F0),
+  'electric': Color(0xFFF7D02C),
+  'ice': Color(0xFF96D9D6),
+  'fighting': Color(0xFFC22E28),
+  'psychic': Color(0xFFF95587),
+  'rock': Color(0xFFB6A136),
+  'ground': Color(0xFFE2BF65),
+  'flying': Color(0xFFA98FF3),
+  'bug': Color(0xFFA6B91A),
+  'normal': Color(0xFFA8A77A),
+  'ghost': Color(0xFF735797),
+  'steel': Color(0xFFB7B7CE),
+  'dragon': Color(0xFF6F35FC),
+  'dark': Color(0xFF705746),
+  'fairy': Color(0xFFD685AD),
 };
 
 extension StringCapitalize on String {
@@ -75,25 +74,6 @@ extension StringCapitalize on String {
         ],
       );
     }).toList();
-  }
-}
-
-class ShinyPokemon {
-  bool isShiny = false; // 이로치 상태 기본값 설정
-
-  //이로치 상태 토글하는 메서드 생성
-  void toggleShiny() {
-    isShiny = !isShiny;
-  }
-
-  //포켓몬id로 이미지 url을 반환
-  String getPokemonImageUrl(PokedexEntry url) {
-    final pokemonId = url.getPokemonId();
-    if (isShiny) {
-      return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/$pokemonId.png';
-    } else {
-      return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$pokemonId.png';
-    }
   }
 }
 
