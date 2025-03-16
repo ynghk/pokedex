@@ -11,17 +11,18 @@ class PokemonDetailViewModel with ChangeNotifier {
   final int pokemonId;
   PokemonDetail? _pokemonDetail;
   List<EvolutionStage>? _evolutionChain;
-  bool _isLoading = true;
+  bool _isLoading = false;
   String? _error;
+  final ScrollController _scrollController = ScrollController();
 
-  PokemonDetailViewModel(this._repository, this.pokemonId) {
-    fetchData();
-  }
+  PokemonDetailViewModel(this._repository, this.pokemonId);
 
+  // Getters
   PokemonDetail? get pokemonDetail => _pokemonDetail;
   List<EvolutionStage>? get evolutionChain => _evolutionChain;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  ScrollController get scrollController => _scrollController;
 
   // UI에 접근할 수 있는 getter
   String get pokemonHeight =>
@@ -64,19 +65,35 @@ class PokemonDetailViewModel with ChangeNotifier {
     );
   }
 
+  // 데이터 로드 메서드
   Future<void> fetchData() async {
     _isLoading = true;
+    _error = null;
+    _pokemonDetail = null;
+    _evolutionChain = null;
     notifyListeners();
-
     try {
       _pokemonDetail = await _repository.getPokemonDetail(pokemonId);
       _evolutionChain = await _repository.getEvolutionChain(pokemonId);
-      _error = null;
     } catch (e) {
       _error = e.toString();
+      print('Error fetching data for ID $pokemonId: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> fetchDataWithScrollReset(BuildContext context) async {
+    await fetchData();
+    if (_scrollController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          0.0,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      });
     }
   }
 
@@ -122,7 +139,9 @@ class PokemonDetailViewModel with ChangeNotifier {
                 url:
                     'https://pokeapi.co/api/v2/pokemon-species/${evolution.id}/',
               ),
-              isDarkMode: Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5,
+              isDarkMode:
+                  Theme.of(context).colorScheme.surface.computeLuminance() <=
+                  0.5,
             ),
       ),
     );
@@ -136,6 +155,7 @@ class PokemonDetailViewModel with ChangeNotifier {
         .replaceAll('  ', ' ');
   }
 
+  // 포켓몬 이름 포맷팅
   String getFormattedTitle(String name) {
     return 'No.$pokemonId ${name.capitalize()}';
   }
