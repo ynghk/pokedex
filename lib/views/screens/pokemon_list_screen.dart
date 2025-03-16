@@ -4,7 +4,7 @@ import 'package:pokedex_app/repositories/pokemon_repository.dart';
 import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-class PokemonListScreen extends StatefulWidget {
+class PokemonListScreen extends StatelessWidget {
   final bool isDarkMode;
   final Function(bool) onThemeChanged;
 
@@ -15,55 +15,20 @@ class PokemonListScreen extends StatefulWidget {
   });
 
   @override
-  State<PokemonListScreen> createState() => _PokemonListScreenState();
-}
-
-class _PokemonListScreenState extends State<PokemonListScreen> {
-  late TextEditingController _controller;
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-    _scrollController = ScrollController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _scrollToTop() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0.0,
-        duration: Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      print('ScrollController is not attached to any scroll views.');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final repository = Provider.of<PokemonRepository>(context, listen: false);
     return ChangeNotifierProvider(
-      create: (_) => PokemonListViewModel(repository)..loadPokemons('Kanto'),
+      create: (_) {
+        final viewModel = PokemonListViewModel(repository);
+        viewModel.loadInitialPokemons(); // 초기 로딩 여기서 시작
+        viewModel.initDarkMode(isDarkMode); // 다크 모드 초기화
+        return viewModel;
+      },
       child: Consumer<PokemonListViewModel>(
         builder: (context, viewModel, child) {
-          if (_controller.text != viewModel.searchQuery) {
-            _controller.text = viewModel.searchQuery;
-          }
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () {
-              if (!FocusScope.of(context).hasFocus) return;
-              FocusScope.of(context).unfocus();
-            },
+            onTap: viewModel.unfocusKeyboard(context), // 뷰모델로 이동
             child: Scaffold(
               appBar: AppBar(
                 backgroundColor: Colors.red,
@@ -71,9 +36,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                   builder:
                       (context) => IconButton(
                         icon: Icon(Icons.list, size: 40, color: Colors.white),
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
+                        onPressed: () => Scaffold.of(context).openDrawer(),
                       ),
                 ),
                 title: Center(
@@ -102,11 +65,8 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 color: Colors.white,
                                 size: 30,
                               ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
+                              onPressed: () => Navigator.pop(context),
                             ),
-
                             Expanded(
                               child: Center(
                                 child: Image.asset(
@@ -124,328 +84,37 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         child: ListView(
                           padding: EdgeInsets.zero,
                           children: [
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Kanto Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Kanto',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_rounded,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Kanto')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Kanto',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Kanto'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Johto Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Johto',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Johto')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Johto',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Johto'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Hoenn Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Hoenn',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Hoenn')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Hoenn',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Hoenn'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Sinnoh Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Sinnoh',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Sinnoh')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Sinnoh',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Sinnoh'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Unova Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Unova',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Unova')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Unova',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Unova'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Kalos Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Kalos',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Kalos')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Kalos',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Kalos'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Alola Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Alola',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Alola')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Alola',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Alola'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Galar Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Galar',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Galar')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Galar',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Galar'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Paldea Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Paldea',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Paldea')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Paldea',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
-
+                            _buildRegionTile(context, viewModel, 'Paldea'),
                             Divider(height: 1, color: Colors.grey),
-
-                            ListTile(
-                              leading: Icon(Icons.map_outlined),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    'Hisui Region',
-                                    style: viewModel.getRegionTextColor(
-                                      'Hisui',
-                                    ),
-                                  ),
-
-                                  Spacer(),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color:
-                                        viewModel
-                                            .getRegionTextColor('Hisui')
-                                            ?.color,
-                                  ),
-                                ],
-                              ),
-                              onTap:
-                                  () => viewModel.selectRegion(
-                                    'Hisui',
-                                    _scrollToTop,
-                                    context,
-                                  ),
-                            ),
+                            _buildRegionTile(context, viewModel, 'Hisui'),
                           ],
                         ),
                       ),
                       ListTile(
-                        trailing: Icon(
-                          Icons.settings,
-                          size: 20,
-                        ), // 톱니바퀴 아이콘, 작게 설정
+                        trailing: Icon(Icons.settings, size: 20),
                         title: Text('Settings'),
                         tileColor: viewModel.getSettingsTileColor(context),
                         onTap:
                             () => viewModel.showSettingsDialog(
                               context,
-                              widget.isDarkMode,
-                              widget.onThemeChanged,
+                              isDarkMode,
+                              onThemeChanged,
                             ),
                       ),
                     ],
@@ -455,14 +124,13 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
               body: Column(
                 children: [
                   SizedBox(height: 12),
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
                     child: Row(
                       children: [
                         Expanded(
                           child: TextField(
-                            controller: _controller,
+                            controller: viewModel.textController, // 뷰모델에서 제공
                             onChanged: viewModel.updateSearchQuery,
                             style: viewModel.getSearchTextStyle(context),
                             decoration: viewModel.getSearchDecoration(context),
@@ -471,26 +139,23 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                       ],
                     ),
                   ),
-
                   SizedBox(height: 12),
                   Expanded(
                     child: RefreshIndicator(
                       backgroundColor:
-                          widget.isDarkMode
-                              ? Colors.grey.shade800
-                              : Colors.white,
+                          Theme.of(context).scaffoldBackgroundColor,
                       color: Colors.red,
                       onRefresh: () async {
-                        // 새로고침 시 현재 지역 데이터 다시 로드
-                        await viewModel.loadPokemons(viewModel.selectedRegion);
+                        await viewModel.loadInitialPokemons();
+                        viewModel.scrollToTop(); // 새로고침 후 맨 위로
                       },
                       child:
                           viewModel.isLoading
                               ? Center(
                                 child: Image.asset(
                                   'assets/pokeball_spin.gif',
-                                  width: 300,
-                                  height: 300,
+                                  width: 150,
+                                  height: 150,
                                 ),
                               )
                               : viewModel.error != null
@@ -505,22 +170,10 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 ),
                               )
                               : NotificationListener<ScrollNotification>(
-                                onNotification: (notification) {
-                                  if (notification
-                                      is ScrollUpdateNotification) {
-                                    if (notification.scrollDelta != null &&
-                                        notification.scrollDelta! < 0 &&
-                                        FocusScope.of(context).hasFocus) {
-                                      FocusScope.of(
-                                        context,
-                                      ).unfocus(); // 위로 스크롤 시 키보드 닫기
-                                    }
-                                  }
-                                  return false; // 이벤트 전파 유지
-                                },
-                                child: KantoPokemonList(
+                                onNotification: viewModel
+                                    .handleScrollNotification(context),
+                                child: PokemonList(
                                   viewModel: viewModel,
-                                  scrollController: _scrollController,
                                 ),
                               ),
                     ),
@@ -528,16 +181,16 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                 ],
               ),
               floatingActionButton: FloatingActionButton(
-                onPressed: _scrollToTop,
-                backgroundColor: Colors.grey.shade600, // 투명한 야간 느낌
-                elevation: 8.0, // Z-stack 효과 (떠 있는 느낌)
+                onPressed: viewModel.scrollToTop,
+                backgroundColor: Colors.grey.shade600,
+                elevation: 8.0,
                 shape: CircleBorder(),
                 splashColor: Colors.red.shade300,
                 hoverElevation: 10,
                 child: Icon(
                   Icons.keyboard_double_arrow_up_rounded,
                   color: Colors.white,
-                ), // 원형 버튼
+                ),
               ),
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.endFloat,
@@ -547,23 +200,44 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       ),
     );
   }
+
+  Widget _buildRegionTile(
+    BuildContext context,
+    PokemonListViewModel viewModel,
+    String region,
+  ) {
+    return ListTile(
+      leading: Icon(Icons.map_outlined),
+      title: Row(
+        children: [
+          Text('$region Region', style: viewModel.getRegionTextColor(region)),
+          Spacer(),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: viewModel.getRegionTextColor(region)?.color,
+          ),
+        ],
+      ),
+      onTap:
+          () => viewModel.selectRegion(region, viewModel.scrollToTop, context),
+    );
+  }
 }
 
-class KantoPokemonList extends StatelessWidget {
+class PokemonList extends StatelessWidget {
   final PokemonListViewModel viewModel;
-  final ScrollController scrollController;
 
-  const KantoPokemonList({
+  const PokemonList({
     super.key,
     required this.viewModel,
-    required this.scrollController,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      controller: scrollController,
+      controller: viewModel.scrollController,
       physics: AlwaysScrollableScrollPhysics(),
+      cacheExtent: 1000,
       itemCount: viewModel.filteredPokemons.length,
       itemBuilder: (context, index) {
         var pokemon = viewModel.filteredPokemons[index];
@@ -576,15 +250,31 @@ class KantoPokemonList extends StatelessWidget {
               children: [
                 Image.network(
                   viewModel.getPokemonImageUrl(pokemon.getPokemonId()),
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value:
+                              loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                        ),
+                      ),
+                    );
+                  },
                   errorBuilder:
                       (context, error, stackTrace) => Image.asset(
                         'assets/pokeball_error.png',
                         width: 80,
                         height: 80,
                       ),
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.contain,
                 ),
 
                 //포켓몬 이름 표시해주는 것.
