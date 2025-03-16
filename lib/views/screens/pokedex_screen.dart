@@ -26,25 +26,14 @@ class PokedexScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => PokemonDetailViewModel(repository, pokedex.id),
+          create:
+              (_) =>
+                  PokemonDetailViewModel(repository, pokedex.id)..fetchData(),
         ),
         ChangeNotifierProvider(create: (_) => ShinyPokemonViewmodel()),
       ],
       child: Consumer2<PokemonDetailViewModel, ShinyPokemonViewmodel>(
         builder: (context, detailViewModel, shinyViewModel, child) {
-          if (detailViewModel.isLoading) {
-            return Center(
-              child: Image.asset(
-                'assets/pokeball_spin.gif',
-                width: 300,
-                height: 300,
-              ),
-            );
-          }
-          if (detailViewModel.error != null) {
-            return Center(child: Text('Error: ${detailViewModel.error}'));
-          }
-
           return Scaffold(
             appBar: AppBar(
               backgroundColor:
@@ -56,7 +45,11 @@ class PokedexScreen extends StatelessWidget {
                 detailViewModel.getFormattedTitle(pokedex.name),
                 style:
                     detailViewModel.isLoading || detailViewModel.error != null
-                        ? TextStyle(color: Colors.white)
+                        ? TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        )
                         : detailViewModel.getAppBarTitleStyle(
                           detailViewModel.getAppBarColor(),
                         ),
@@ -71,41 +64,62 @@ class PokedexScreen extends StatelessWidget {
                         : Colors.white,
               ),
             ),
-            body: SafeArea(
-              child: RefreshIndicator(
-                backgroundColor:
-                    isDarkMode ? Colors.grey.shade800 : Colors.white,
-                color: Colors.red,
-                onRefresh: () async {
-                  // 새로고침 시 데이터 다시 로드
-                  await detailViewModel.fetchData();
-                },
-                child:
-                    detailViewModel.isLoading
-                        ? Center(
-                          child: Image.asset(
-                            'assets/pokeball_spin.gif',
-                            width: 300,
-                            height: 300,
-                          ),
-                        )
-                        : detailViewModel.error != null
-                        ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Error: ${detailViewModel.error}'),
-                              SizedBox(height: 10),
-                              Text('위로 당겨서 새로고침 해주세요'),
-                            ],
-                          ),
-                        )
-                        : _buildPokemonDetail(
-                          context,
-                          detailViewModel,
-                          shinyViewModel,
+            body: Stack(
+              children: [
+                SafeArea(
+                  child: RefreshIndicator(
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    color: Colors.red,
+                    onRefresh: () async {
+                      // 새로고침 시 데이터 다시 로드
+                      await detailViewModel.fetchDataWithScrollReset(context);
+                    },
+                    child: SingleChildScrollView(
+                      controller: detailViewModel.scrollController, // 뷰모델에서 관리
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        constraints: BoxConstraints(
+                          minHeight:
+                              MediaQuery.of(context).size.height -
+                              MediaQuery.of(context).padding.top,
                         ),
-              ),
+                        child:
+                            detailViewModel.error != null
+                                ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('Error: ${detailViewModel.error}'),
+                                      SizedBox(height: 10),
+                                      Text('위로 당겨서 새로고침 해주세요'),
+                                    ],
+                                  ),
+                                )
+                                : detailViewModel.pokemonDetail == null
+                                ? Center(
+                                  child: Text('Loading...'), // 임시 대기 화면
+                                )
+                                : _buildPokemonDetail(
+                                  context,
+                                  detailViewModel,
+                                  shinyViewModel,
+                                ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (detailViewModel.isLoading)
+                  Container(
+                    color: Colors.transparent, // 투명 배경
+                    child: Center(
+                      child: Image.asset(
+                        'assets/pokeball_spin.gif',
+                        width: 150, // 크기 조정
+                        height: 150,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           );
         },
