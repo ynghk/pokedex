@@ -174,7 +174,6 @@ class PokemonListScreen extends StatelessWidget {
                                     .handleScrollNotification(context),
                                 child: PokemonList(
                                   viewModel: viewModel,
-                                  scrollController: viewModel.scrollController,
                                 ),
                               ),
                     ),
@@ -227,18 +226,16 @@ class PokemonListScreen extends StatelessWidget {
 
 class PokemonList extends StatelessWidget {
   final PokemonListViewModel viewModel;
-  final ScrollController scrollController;
 
   const PokemonList({
     super.key,
     required this.viewModel,
-    required this.scrollController,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      controller: scrollController,
+      controller: viewModel.scrollController,
       physics: AlwaysScrollableScrollPhysics(),
       cacheExtent: 1000,
       itemCount: viewModel.filteredPokemons.length,
