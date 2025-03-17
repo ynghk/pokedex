@@ -14,6 +14,8 @@ class PokemonDetailViewModel with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   final ScrollController _scrollController = ScrollController();
+  bool _isDisposed = false;
+  bool get isDisposed => _isDisposed;
 
   PokemonDetailViewModel(this._repository, this.pokemonId);
 
@@ -67,33 +69,69 @@ class PokemonDetailViewModel with ChangeNotifier {
 
   // 데이터 로드 메서드
   Future<void> fetchData() async {
+    // dispose된 후 호출되었는지 확인
+    if (_isDisposed) {
+      print('경고: disposed된 ViewModel에서 fetchData() 호출됨');
+      return;
+    }
+
     _isLoading = true;
     _error = null;
     _pokemonDetail = null;
     _evolutionChain = null;
     notifyListeners();
+
     try {
       _pokemonDetail = await _repository.getPokemonDetail(pokemonId);
+      // 중간에 dispose 되었는지 확인
+      if (_isDisposed) return;
+
       _evolutionChain = await _repository.getEvolutionChain(pokemonId);
+      // 다시 확인
+      if (_isDisposed) return;
     } catch (e) {
+      if (_isDisposed) return;
       _error = e.toString();
       print('Error fetching data for ID $pokemonId: $e');
     } finally {
+      if (_isDisposed) return;
       _isLoading = false;
       notifyListeners();
     }
   }
 
   Future<void> fetchDataWithScrollReset(BuildContext context) async {
-    await fetchData();
-    if (_scrollController.hasClients) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          0.0,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      });
+    // 뷰모델이 이미 dispose되었는지 확인
+    if (_isDisposed) {
+      print('경고: disposed된 ViewModel에서 fetchDataWithScrollReset() 호출됨');
+      return;
+    }
+
+    try {
+      await fetchData();
+      // 비동기 작업 후 뷰모델이 dispose 되었는지 확인
+      if (_isDisposed) return;
+
+      if (_scrollController.hasClients) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // 다시 확인하여 안전하게 스크롤 이동
+          if (!_isDisposed && _scrollController.hasClients) {
+            try {
+              _scrollController.animateTo(
+                0.0,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            } catch (e) {
+              // 스크롤 컨트롤러 관련 오류 무시
+              print('스크롤 리셋 중 오류 발생: $e');
+            }
+          }
+        });
+      }
+    } catch (e) {
+      // 에러 처리
+      print('데이터 리로드 중 오류 발생: $e');
     }
   }
 
@@ -104,12 +142,13 @@ class PokemonDetailViewModel with ChangeNotifier {
 
   // 타입 별 색상 처리 로직
   List<TextSpan> getTypeColoredTextSpans() {
-    if (_pokemonDetail == null) return [];
+    if (_isDisposed || _pokemonDetail == null) return [];
     return _pokemonDetail!.types.join(', ').toTypeColoredText();
   }
 
   // 이브이 특별 처리 확인 메서드
   bool isEeveeEvolutionCase(int currentPokemonId) {
+    if (_isDisposed) return false;
     return evolutionChain != null &&
         evolutionChain!.isNotEmpty &&
         evolutionChain![0].name.toLowerCase() == 'eevee' &&
@@ -118,7 +157,7 @@ class PokemonDetailViewModel with ChangeNotifier {
 
   // 이브이를 제외한 진화형 목록 반환
   List<EvolutionStage> getEeveeEvolutions() {
-    if (evolutionChain == null || evolutionChain!.isEmpty) {
+    if (_isDisposed || evolutionChain == null || evolutionChain!.isEmpty) {
       return [];
     }
     // 이브이(첫 번째)를 제외한 모든 진화형 반환
@@ -127,21 +166,24 @@ class PokemonDetailViewModel with ChangeNotifier {
 
   // 진화 단계 클릭 처리 메서드
   void navigateToEvolution(BuildContext context, EvolutionStage evolution) {
-    // 네비게이션 로직을 ViewModel에서 처리
+    // 네비게이션 전에 필요한 데이터를 로컬 변수에 저장하여 ViewModel이 폐기된 후에도 사용 가능하게 함
+    final evolutionId = evolution.id;
+    final evolutionName = evolution.name;
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+
+    // 네비게이션 로직
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => PokedexScreen(
               pokedex: PokedexEntry(
-                id: evolution.id,
-                name: evolution.name,
-                url:
-                    'https://pokeapi.co/api/v2/pokemon-species/${evolution.id}/',
+                id: evolutionId,
+                name: evolutionName,
+                url: 'https://pokeapi.co/api/v2/pokemon-species/$evolutionId/',
               ),
-              isDarkMode:
-                  Theme.of(context).colorScheme.surface.computeLuminance() <=
-                  0.5,
+              isDarkMode: isDark,
             ),
       ),
     );
@@ -157,7 +199,7 @@ class PokemonDetailViewModel with ChangeNotifier {
 
   // 포켓몬 이름 포맷팅
   String getFormattedTitle(String name) {
-    return 'No.$pokemonId ${name.capitalize()}';
+    return 'No.$pokemonId   ${name.capitalize()}';
   }
 
   // AppBar 스타일 관련 메서드
@@ -199,5 +241,36 @@ class PokemonDetailViewModel with ChangeNotifier {
   // 이미지 URL 생성 메서드
   String getListImageUrl(int pokemonId) {
     return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokemonId.png';
+  }
+
+  // 리소스 정리를 위한 dispose 메서드 구현
+  @override
+  void dispose() {
+    // 플래그를 먼저 설정
+    _isDisposed = true;
+
+    // 안전하게 컨트롤러 해제
+    if (_scrollController.hasClients) {
+      try {
+        _scrollController.dispose();
+      } catch (e) {
+        print('ScrollController 해제 중 오류: $e');
+      }
+    }
+
+    // 참조 해제
+    _pokemonDetail = null;
+    _evolutionChain = null;
+
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) {
+      super.notifyListeners();
+    } else {
+      print('경고: disposed된 ViewModel에서 notifyListeners() 호출됨');
+    }
   }
 }

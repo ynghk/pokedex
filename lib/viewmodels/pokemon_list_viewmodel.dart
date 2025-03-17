@@ -21,7 +21,66 @@ class PokemonListViewModel with ChangeNotifier {
   final Map<int, List<String>> typeCache = {};
 
   // 생성자 변경
-  PokemonListViewModel(this._repository);
+  PokemonListViewModel(this._repository) {
+    // 검색어 변경 리스너 추가
+    _textController.addListener(_onSearchChanged);
+  }
+
+  // 검색어 변경 감지 메서드
+  void _onSearchChanged() {
+    updateSearchQuery(_textController.text);
+  }
+
+  // 검색어 업데이트 메서드
+  void updateSearchQuery(String query) {
+    _searchQuery = query.toLowerCase();
+    notifyListeners();
+  }
+
+  // 검색 초기화 메서드
+  void clearSearch() {
+    _textController.clear();
+    _searchQuery = '';
+    notifyListeners();
+  }
+
+  // 검색 UI 스타일 - 텍스트 스타일
+  TextStyle getSearchTextStyle(BuildContext context) {
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+    return TextStyle(color: isDark ? Colors.white : Colors.black);
+  }
+
+  // 검색 UI 스타일 - 입력창 데코레이션
+  InputDecoration getSearchDecoration(BuildContext context) {
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+    return InputDecoration(
+      hintText: 'Search for Pokemon',
+      hintStyle: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600]),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: isDark ? Colors.white : Colors.black,
+          width: 1.0,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: isDark ? Colors.white : Colors.black,
+          width: 2.0,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      suffixIcon: IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          clearSearch();
+        },
+      ),
+    );
+  }
 
   // Getters
   TextEditingController get textController => _textController;
@@ -33,15 +92,27 @@ class PokemonListViewModel with ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
 
   // 필터링된 포켓몬 리스트
-  List<PokedexEntry> get filteredPokemons =>
-      _searchQuery.isEmpty
-          ? _pokemons
-          : _allPokemons
-              .where(
-                (p) =>
-                    p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
-              )
-              .toList();
+  List<PokedexEntry> get filteredPokemons {
+    if (_searchQuery.isEmpty) {
+      return _pokemons;
+    }
+
+    return _pokemons
+        .where(
+          (pokemon) =>
+              pokemon.name.toLowerCase().contains(_searchQuery) ||
+              pokemon.id.toString().contains(_searchQuery),
+        )
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    _textController.removeListener(_onSearchChanged);
+    _textController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   void scrollToTop() {
     if (_scrollController.hasClients) {
@@ -212,18 +283,6 @@ class PokemonListViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 검색 쿼리 업데이트
-  void updateSearchQuery(String query) {
-    _searchQuery = query;
-    notifyListeners();
-  }
-
-  // 검색 초기화
-  void clearSearch() {
-    _searchQuery = '';
-    notifyListeners();
-  }
-
   // UI 관련 메서드들
   BoxDecoration getDrawerHeaderDecoration() {
     return const BoxDecoration(color: Colors.red);
@@ -246,42 +305,6 @@ class PokemonListViewModel with ChangeNotifier {
           fontSize: 20,
           fontWeight: FontWeight.w600,
         );
-  }
-
-  TextStyle getSearchTextStyle(BuildContext context) {
-    final isDark =
-        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
-    return TextStyle(color: isDark ? Colors.white : Colors.black);
-  }
-
-  InputDecoration getSearchDecoration(BuildContext context) {
-    final isDark =
-        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
-    return InputDecoration(
-      hintText: 'Search for Pokemon',
-      hintStyle: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600]),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: isDark ? Colors.white : Colors.black,
-          width: 1.0,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: isDark ? Colors.white : Colors.black,
-          width: 2.0,
-        ),
-      ),
-      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      suffixIcon: IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          clearSearch();
-        },
-      ),
-    );
   }
 
   // 설정 타일 색상 반환

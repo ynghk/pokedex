@@ -12,6 +12,9 @@ class PokedexEntry {
       url: json['pokemon_species']['url'],
     );
   }
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'url': url};
+  }
 
   //url에서 포켓몬 id 추출
   int getPokemonId() {
