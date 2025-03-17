@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/evolution_stage.dart';
 import 'package:pokedex_app/models/pokemon_type_colors.dart';
+import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/viewmodels/pokemon_detail_viewmodel.dart';
+import 'package:pokedex_app/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
 
 class EvolutionStageWidget extends StatelessWidget {
@@ -13,6 +15,27 @@ class EvolutionStageWidget extends StatelessWidget {
 
   final List<EvolutionStage>? evolutionChain;
   final int currentPokemonId;
+
+  // ViewModel에 의존하지 않는 직접 네비게이션 메서드
+  void _navigateToEvolution(BuildContext context, EvolutionStage evolution) {
+    final isDark =
+        Theme.of(context).colorScheme.surface.computeLuminance() <= 0.5;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => PokedexScreen(
+              pokedex: PokedexEntry(
+                id: evolution.id,
+                name: evolution.name,
+                url:
+                    'https://pokeapi.co/api/v2/pokemon-species/${evolution.id}/',
+              ),
+              isDarkMode: isDark,
+            ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +85,8 @@ class EvolutionStageWidget extends StatelessWidget {
                     onTap: () {
                       // 현재 포켓몬이 아닌 경우에만 탐색
                       if (stage.id != currentPokemonId) {
-                        viewModel.navigateToEvolution(context, stage);
+                        // ViewModel 대신 로컬 메서드 사용
+                        _navigateToEvolution(context, stage);
                       }
                     },
                     child: Column(

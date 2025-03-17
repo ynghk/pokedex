@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
 import 'package:pokedex_app/models/pokemon_type_colors.dart';
 import 'package:pokedex_app/repositories/pokemon_repository.dart';
+import 'package:pokedex_app/viewmodels/bookmark_viewmodel.dart';
 import 'package:pokedex_app/viewmodels/pokemon_detail_viewmodel.dart';
 import 'package:pokedex_app/viewmodels/shiny_pokemon_viewmodel.dart';
 import 'package:pokedex_app/views/widgets/evolution_stage_widget.dart';
@@ -26,9 +27,13 @@ class PokedexScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create:
-              (_) =>
-                  PokemonDetailViewModel(repository, pokedex.id)..fetchData(),
+          create: (_) {
+            // ViewModel의 라이프사이클을 더 명확하게 관리
+            final viewModel = PokemonDetailViewModel(repository, pokedex.id);
+            // 별도의 메서드 호출 대신 즉시 fetchData 호출
+            viewModel.fetchData();
+            return viewModel;
+          },
         ),
         ChangeNotifierProvider(create: (_) => ShinyPokemonViewmodel()),
       ],
@@ -41,28 +46,43 @@ class PokedexScreen extends StatelessWidget {
                       ? Colors
                           .grey // 로딩/에러 시 기본 색상
                       : detailViewModel.getAppBarColor(),
-              title: Text(
-                detailViewModel.getFormattedTitle(pokedex.name),
-                style:
-                    detailViewModel.isLoading || detailViewModel.error != null
-                        ? TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 30,
-                        )
-                        : detailViewModel.getAppBarTitleStyle(
-                          detailViewModel.getAppBarColor(),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  detailViewModel.getFormattedTitle(pokedex.name),
+                  style:
+                      detailViewModel.isLoading || detailViewModel.error != null
+                          ? TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30,
+                          )
+                          : detailViewModel.getAppBarTitleStyle(
+                            detailViewModel.getAppBarColor(),
+                          ),
+                ),
+              ),
+              iconTheme: IconThemeData(color: Colors.white, size: 30),
+              actions: [
+                Consumer<BookmarkViewModel>(
+                  builder: (context, bookmarkViewModel, child) {
+                    return InkWell(
+                      splashColor: Colors.transparent,
+                      onTap: () => bookmarkViewModel.toggleBookmark(pokedex),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: Image.asset(
+                          bookmarkViewModel.isBookmarked(pokedex)
+                              ? 'assets/bookmark_pokeball.png'
+                              : 'assets/bookmark_pokeball_shadow.png',
+                          width: 40,
+                          height: 40,
                         ),
-              ),
-              iconTheme: IconThemeData(
-                color:
-                    detailViewModel.isLoading || detailViewModel.error != null
-                        ? Colors.white
-                        : detailViewModel.getAppBarColor().computeLuminance() >
-                            0.5
-                        ? Colors.black
-                        : Colors.white,
-              ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             body: Stack(
               children: [
@@ -96,8 +116,15 @@ class PokedexScreen extends StatelessWidget {
                                   ),
                                 )
                                 : detailViewModel.pokemonDetail == null
-                                ? Center(
-                                  child: Text('Loading...'), // 임시 대기 화면
+                                ? Container(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Text(
+                                    'Loading...',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ), // 임시 대기 화면
                                 )
                                 : _buildPokemonDetail(
                                   context,
@@ -373,12 +400,32 @@ class PokedexScreen extends StatelessWidget {
                                       final evolution =
                                           detailViewModel
                                               .getEeveeEvolutions()[index];
+
+                                      // 로컬에 필요한 데이터 복사
+                                      final evolutionId = evolution.id;
+                                      final evolutionName = evolution.name;
+                                      final isDarkMode =
+                                          Theme.of(context).colorScheme.surface
+                                              .computeLuminance() <=
+                                          0.5;
+
                                       return InkWell(
                                         onTap: () {
-                                          // ViewModel의 네비게이션 메서드 사용
-                                          detailViewModel.navigateToEvolution(
+                                          // ViewModel 대신 직접 네비게이션 처리
+                                          Navigator.push(
                                             context,
-                                            evolution,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => PokedexScreen(
+                                                    pokedex: PokedexEntry(
+                                                      id: evolutionId,
+                                                      name: evolutionName,
+                                                      url:
+                                                          'https://pokeapi.co/api/v2/pokemon-species/$evolutionId/',
+                                                    ),
+                                                    isDarkMode: isDarkMode,
+                                                  ),
+                                            ),
                                           );
                                         },
                                         child: Column(
