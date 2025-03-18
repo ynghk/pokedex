@@ -6,23 +6,25 @@ import 'package:poke_master/models/pokemon_detail.dart';
 
 class ApiService {
   Future<List<PokedexEntry>> getPokemonData({int retries = 3}) async {
-  late http.Response response;
-  for (int i = 0; i < retries; i++) {
-    try {
-      response = await http
-          .get(Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'))
-          .timeout(const Duration(seconds: 30));
-      if (response.statusCode == 200) break;
-      throw Exception('Failed with status: ${response.statusCode}');
-    } catch (e) {
-      if (i == retries - 1) throw Exception('All retries failed: $e');
-      print('Retry $i failed: $e');
-      await Future.delayed(Duration(seconds: 2));
+    late http.Response response;
+    for (int i = 0; i < retries; i++) {
+      try {
+        response = await http
+            .get(Uri.parse('https://pokeapi.co/api/v2/pokedex/1/'))
+            .timeout(const Duration(seconds: 30));
+        if (response.statusCode == 200) break;
+        throw Exception('Failed with status: ${response.statusCode}');
+      } catch (e) {
+        if (i == retries - 1) throw Exception('All retries failed: $e');
+        print('Retry $i failed: $e');
+        await Future.delayed(Duration(seconds: 2));
+      }
     }
-  }
-  final data = jsonDecode(response.body);
+    final data = jsonDecode(response.body);
     if (data is! Map<String, dynamic> || data['pokemon_entries'] == null) {
-      throw Exception('Invalid response format: pokemon_entries is missing or null - ${response.body}');
+      throw Exception(
+        'Invalid response format: pokemon_entries is missing or null - ${response.body}',
+      );
     }
 
     final entries = data['pokemon_entries'] as List<dynamic>;

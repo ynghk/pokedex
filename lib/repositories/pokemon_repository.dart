@@ -10,6 +10,8 @@ class PokemonRepository {
     return _apiService.getPokemonData();
   }
 
-  Future<PokemonDetail> getPokemonDetail(int id) => _apiService.getPokemonDetail(id);
-  Future<List<EvolutionStage>> getEvolutionChain(int pokemonId) => _apiService.getEvolutionStages(pokemonId);
+  Future<PokemonDetail> getPokemonDetail(int id) =>
+      _apiService.getPokemonDetail(id);
+  Future<List<EvolutionStage>> getEvolutionChain(int pokemonId) =>
+      _apiService.getEvolutionStages(pokemonId);
 }

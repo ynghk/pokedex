@@ -17,8 +17,9 @@ class PokemonListViewModel with ChangeNotifier {
   final PokemonRepository _repository;
   List<PokedexEntry> _allPokemons = [];
   List<PokedexEntry> _pokemons = [];
+  List<String> selectedTypes = [];
   String _searchQuery = '';
-  String _selectedRegion;
+  String _selectedRegion = 'Kanto';
   String _selectedLanguage = 'English';
   bool _isDarkMode = false; // 다크모드 상태 추가
   bool isLoading = true;
@@ -59,7 +60,7 @@ class PokemonListViewModel with ChangeNotifier {
 
   // 타입 및 정렬 관련 getter
   List<String> get availableTypes => _availableTypes;
-  Set<String> get selectedTypes => _selectedTypes;
+  Set<String> get selectedTypeChip => _selectedTypes;
   SortOption get sortOption => _sortOption;
 
   // 검색어 변경 감지 메서드
@@ -234,11 +235,14 @@ class PokemonListViewModel with ChangeNotifier {
 
   // 스크롤 상단으로 이동 버튼
   void scrollToTop() {
-    _scrollController.animateTo(
-      0.0,
-      duration: Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-    );
+    if (scrollController.hasClients) {
+      // 연결된 뷰가 있는지 확인
+      scrollController.animateTo(
+        0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   // 키보드 내리기
@@ -286,6 +290,31 @@ class PokemonListViewModel with ChangeNotifier {
     } catch (e) {
       error = e.toString();
       print('Error loading initial pokemons: $e');
+      print('Stacktrace: ${StackTrace.current}');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+      preloadTypeCache();
+    }
+  }
+
+  // 현재 지역 포켓몬만 새로고침
+  Future<void> loadPokemons() async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    try {
+      // 전체 포켓몬 데이터 다시 로드
+      _allPokemons = await _repository.getPokemonsByRegion(_selectedRegion);
+      // 현재 선택된 지역에 맞는 포켓몬만 필터링
+      _pokemons =
+          _allPokemons
+              .where((p) => _getRegionForPokemon(p.id) == _selectedRegion)
+              .toList();
+      print('Refreshed ${_pokemons.length} pokemons for $_selectedRegion');
+    } catch (e) {
+      error = e.toString();
+      print('Error refreshing pokemons: $e');
       print('Stacktrace: ${StackTrace.current}');
     } finally {
       isLoading = false;
