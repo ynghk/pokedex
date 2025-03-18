@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/repositories/pokemon_repository.dart';
-import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
-import 'package:pokedex_app/views/screens/bookmark_screen.dart';
+import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
+import 'package:poke_master/views/screens/bookmark_screen.dart';
 import 'package:provider/provider.dart';
 
 class PokemonListScreen extends StatelessWidget {
@@ -33,7 +33,7 @@ class PokemonListScreen extends StatelessWidget {
             onTap: viewModel.unfocusKeyboard(context),
             child: Scaffold(
               appBar: AppBar(
-                backgroundColor: Colors.red,
+                backgroundColor: Color(0xFF702fc8),
                 leading: Builder(
                   builder:
                       (context) => IconButton(
@@ -177,7 +177,9 @@ class PokemonListScreen extends StatelessWidget {
                       // Drawer 헤더
                       Container(
                         height: 100,
-                        decoration: const BoxDecoration(color: Colors.red),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF702fc8),
+                        ),
                         child: Row(
                           children: [
                             Expanded(
@@ -239,31 +241,57 @@ class PokemonListScreen extends StatelessWidget {
 
                             // 타입 필터 칩 그리드
                             Wrap(
-                              spacing: 6.0,
-                              runSpacing: 6.0,
+                              spacing: 5.0,
+                              runSpacing: 5.0,
                               children:
                                   viewModel.availableTypes.map((type) {
                                     final isSelected = viewModel.selectedTypes
                                         .contains(type);
                                     final color = viewModel.getTypeColor(type);
+                                    final isDarkMode =
+                                        Theme.of(context).brightness ==
+                                        Brightness.dark;
                                     return FilterChip(
                                       label: Text(
                                         StringCapitalize(type).capitalize(),
                                         style: TextStyle(
                                           color:
-                                              color.computeLuminance() > 0.5
-                                                  ? Colors.black
+                                              isSelected
+                                                  ? (color.computeLuminance() >
+                                                          0.5
+                                                      ? Colors.black
+                                                      : Colors.white)
                                                   : Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      backgroundColor: color.withOpacity(0.5),
+                                      backgroundColor: color.withAlpha(70),
                                       selectedColor: color,
                                       selected: isSelected,
                                       checkmarkColor:
-                                          color.computeLuminance() > 0.5
-                                              ? Colors.black
+                                          isSelected
+                                              ? (color.computeLuminance() > 0.5
+                                                  ? Colors.black
+                                                  : Colors.white)
                                               : Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        side: BorderSide(
+                                          color:
+                                              isDarkMode
+                                                  ? (isSelected
+                                                      ? Colors.white
+                                                      : Colors.black)
+                                                  : (isSelected
+                                                      ? Colors.black
+                                                      : Colors.white),
+                                          width: 3.0, // 테두리 두께
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          8.0,
+                                        ), // 모서리 둥글기
+                                      ),
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                       onSelected: (bool selected) {
                                         viewModel.toggleTypeFilter(type);
                                       },
@@ -347,7 +375,7 @@ class PokemonListScreen extends StatelessWidget {
                     child: RefreshIndicator(
                       backgroundColor:
                           Theme.of(context).scaffoldBackgroundColor,
-                      color: Colors.red,
+                      color: Color(0xFF702fc8),
                       onRefresh: () async {
                         await viewModel.loadInitialPokemons();
                         viewModel.scrollToTop(); // 새로고침 후 맨 위로
@@ -420,7 +448,7 @@ class PokemonListScreen extends StatelessWidget {
                 backgroundColor: Colors.grey.shade600,
                 elevation: 8.0,
                 shape: CircleBorder(),
-                splashColor: Colors.red.shade300,
+                splashColor: Colors.deepPurpleAccent.shade200,
                 hoverElevation: 10,
                 child: Icon(
                   Icons.keyboard_double_arrow_up_rounded,
@@ -484,11 +512,14 @@ class PokemonListScreen extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.red : null,
+          color: isSelected ? Color(0xFF702fc8) : null,
         ),
       ),
-      leading: Icon(icon, color: isSelected ? Colors.red : null),
-      trailing: isSelected ? Icon(Icons.check_circle, color: Colors.red) : null,
+      leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
+      trailing:
+          isSelected
+              ? Icon(Icons.check_circle, color: Color(0xFF702fc8))
+              : null,
       onTap: () {
         viewModel.updateSortOption(option);
         // 정렬 후 Drawer 닫기

@@ -1,7 +1,7 @@
 // lib/views/screens/bookmark_screen.dart
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/viewmodels/bookmark_viewmodel.dart';
-import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
+import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
+import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class BookmarkScreen extends StatelessWidget {
@@ -13,7 +13,7 @@ class BookmarkScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red,
+        backgroundColor: Color(0xFF702fc8),
         centerTitle: true,
         title: Image.asset('assets/bookmark.png', width: 170),
         iconTheme: IconThemeData(color: Colors.white, size: 30),
@@ -123,84 +123,108 @@ class BookmarkScreen extends StatelessWidget {
       }
     }
 
-    return ListView.separated(
-      itemCount: bookmarks.length,
-      separatorBuilder:
-          (context, index) => Divider(height: 1, color: Colors.grey),
-      itemBuilder: (context, index) {
-        final pokemon = bookmarks[index];
+    // RefreshIndicator로 ListView를 감싸 당겨서 새로고침 기능 추가 및 스크롤 시 키보드 숨김처리
+    return NotificationListener<ScrollNotification>(
+      onNotification: handleScrollNotification(context),
+      child: RefreshIndicator(
+        color: Color(0xFF702fc8),
+        onRefresh: () async {
+          await bookmarkViewModel.refreshBookmarks();
+        },
+        child: ListView.separated(
+          itemCount: bookmarks.length,
+          separatorBuilder:
+              (context, index) => Divider(height: 1, color: Colors.grey),
+          itemBuilder: (context, index) {
+            final pokemon = bookmarks[index];
 
-        // Dismissible 위젯으로 감싸서 스와이프 삭제 기능 구현
-        return Dismissible(
-          key: Key(pokemon.id.toString()),
-          background: Container(
-            color: Colors.red,
-            alignment: Alignment.centerLeft,
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Icon(Icons.delete, color: Colors.white),
-          ),
-          direction: DismissDirection.startToEnd, // 왼쪽에서 오른쪽으로 스와이프
-          onDismissed: (direction) {
-            bookmarkViewModel.toggleBookmark(pokemon);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: Colors.red,
-                content: Center(
-                  child: Text(
-                    '${pokemon.name.capitalize()} removed from Pokéball',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+            // Dismissible 위젯으로 감싸서 스와이프 삭제 기능 구현
+            return Dismissible(
+              key: Key(pokemon.id.toString()),
+              background: Container(
+                color: Color(0xFF702fc8),
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Icon(Icons.delete, color: Colors.white),
+              ),
+              direction: DismissDirection.startToEnd, // 왼쪽에서 오른쪽으로 스와이프
+              onDismissed: (direction) {
+                bookmarkViewModel.toggleBookmark(pokemon);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Color(0xFF702fc8),
+                    content: Center(
+                      child: Text(
+                        '${pokemon.name.capitalize()} removed from Pokéball',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
+                    behavior: SnackBarBehavior.floating,
+                    duration: Duration(milliseconds: 500),
+                  ),
+                );
+              },
+              child: InkWell(
+                onTap: () {
+                  final listViewModel = Provider.of<PokemonListViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  listViewModel.navigateToDetail(context, pokemon);
+                },
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 5),
+                  leading: Image.network(
+                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.getPokemonId()}.png',
+                    width: 60,
+                    height: 80,
+                    errorBuilder:
+                        (context, error, stackTrace) => Image.asset(
+                          'assets/pokeball_error.png',
+                          width: 80,
+                          height: 80,
+                        ),
+                  ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${pokemon.id}. ${pokemon.name.capitalize()}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Spacer(),
+                      bookmarkViewModel.buildTypeChips(
+                        pokemon.getPokemonId(),
+                        context,
+                      ),
+                      Icon(Icons.chevron_right, size: 20),
+                    ],
                   ),
                 ),
-                behavior: SnackBarBehavior.floating,
-                duration: Duration(milliseconds: 500),
               ),
             );
           },
-          child: InkWell(
-            onTap: () {
-              final listViewModel = Provider.of<PokemonListViewModel>(
-                context,
-                listen: false,
-              );
-              listViewModel.navigateToDetail(context, pokemon);
-            },
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 5),
-              leading: Image.network(
-                'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.getPokemonId()}.png',
-                width: 60,
-                height: 80,
-                errorBuilder:
-                    (context, error, stackTrace) => Image.asset(
-                      'assets/pokeball_error.png',
-                      width: 80,
-                      height: 80,
-                    ),
-              ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    '${pokemon.id}. ${pokemon.name.capitalize()}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Spacer(),
-                  bookmarkViewModel.buildTypeChips(
-                    pokemon.getPokemonId(),
-                    context,
-                  ),
-                  Icon(Icons.chevron_right, size: 20),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
+  }
+
+  // 스크롤 시 키보드 숨기기
+  bool Function(ScrollNotification) handleScrollNotification(
+    BuildContext context,
+  ) {
+    return (ScrollNotification notification) {
+      if ((notification is ScrollUpdateNotification ||
+              notification is ScrollStartNotification) &&
+          FocusScope.of(context).hasFocus) {
+        FocusScope.of(context).unfocus();
+      }
+      return false;
+    };
   }
 
   // 정렬 옵션 다이얼로그
@@ -221,7 +245,7 @@ class BookmarkScreen extends StatelessWidget {
             title: Container(
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Color(0xFF702fc8),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(10),
                   topRight: Radius.circular(10),
@@ -256,7 +280,7 @@ class BookmarkScreen extends StatelessWidget {
                 _buildSortOptionTile(
                   context,
                   bookmarkViewModel,
-                  'Last Added',
+                  'Lastly Added',
                   BookmarkSortOption.dateAddedOldest,
                   Icons.history,
                 ),
@@ -312,11 +336,14 @@ class BookmarkScreen extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.red : null,
+          color: isSelected ? Color(0xFF702fc8) : null,
         ),
       ),
-      leading: Icon(icon, color: isSelected ? Colors.red : null),
-      trailing: isSelected ? Icon(Icons.check_circle, color: Colors.red) : null,
+      leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
+      trailing:
+          isSelected
+              ? Icon(Icons.check_circle, color: Color(0xFF702fc8))
+              : null,
       onTap: () {
         viewModel.updateSortOption(option);
         // 정렬 옵션 선택 후 다이얼로그 닫기

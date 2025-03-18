@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/models/pokemon_type_colors.dart';
-import 'package:pokedex_app/repositories/pokemon_repository.dart';
-import 'package:pokedex_app/views/screens/pokedex_screen.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokemon_type_colors.dart';
+import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
 
 // 정렬 방식 열거형
@@ -36,14 +36,14 @@ class PokemonListViewModel with ChangeNotifier {
     'ice',
     'fighting',
     'poison',
-    'bug',
     'ground',
     'flying',
     'psychic',
+    'bug',
     'rock',
     'ghost',
-    'dragon',
     'dark',
+    'dragon',
     'steel',
     'fairy',
   ];
@@ -202,7 +202,7 @@ class PokemonListViewModel with ChangeNotifier {
           }).toList();
     }
 
-    // 정렬 적용
+    // 포켓몬 정렬 적용
     switch (_sortOption) {
       case SortOption.numberAscending:
         filtered.sort((a, b) => a.id.compareTo(b.id));
@@ -221,7 +221,6 @@ class PokemonListViewModel with ChangeNotifier {
         );
         break;
     }
-
     return filtered;
   }
 
@@ -233,18 +232,16 @@ class PokemonListViewModel with ChangeNotifier {
     super.dispose();
   }
 
+  // 스크롤 상단으로 이동 버튼
   void scrollToTop() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0.0,
-        duration: Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      print('ScrollController is not attached to any scroll views.');
-    }
+    _scrollController.animateTo(
+      0.0,
+      duration: Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
   }
 
+  // 키보드 내리기
   VoidCallback unfocusKeyboard(BuildContext context) {
     return () {
       if (!FocusScope.of(context).hasFocus) return;
@@ -252,12 +249,13 @@ class PokemonListViewModel with ChangeNotifier {
     };
   }
 
+  // 스크롤 시 키보드 숨기기
   bool Function(ScrollNotification) handleScrollNotification(
     BuildContext context,
   ) {
     return (ScrollNotification notification) {
       if (notification is ScrollUpdateNotification) {
-        // 스크롤 방향에 상관없이 스크롤이 발생하면 키보드 내리기
+        // 스크롤 방향에 상관없이 키보드 숨기기
         if (notification.scrollDelta != null &&
             notification.scrollDelta != 0 &&
             FocusScope.of(context).hasFocus) {
@@ -409,7 +407,7 @@ class PokemonListViewModel with ChangeNotifier {
 
   // UI 관련 메서드들
   BoxDecoration getDrawerHeaderDecoration() {
-    return const BoxDecoration(color: Colors.red);
+    return const BoxDecoration(color: Color(0xFF702fc8));
   }
 
   TextStyle getRegionTextStyle() {
@@ -420,7 +418,7 @@ class PokemonListViewModel with ChangeNotifier {
   TextStyle? getRegionTextColor(String region) {
     return region == _selectedRegion
         ? const TextStyle(
-          color: Colors.red,
+          color: Color(0xFF702fc8),
           fontSize: 20,
           fontWeight: FontWeight.w600,
         )
@@ -485,7 +483,7 @@ class PokemonListViewModel with ChangeNotifier {
   // 설정 다이얼로그 스타일
   BoxDecoration getSettingsHeaderDecoration() {
     return const BoxDecoration(
-      color: Colors.red,
+      color: Color(0xFF702fc8),
       borderRadius: BorderRadius.only(
         topLeft: Radius.circular(10),
         topRight: Radius.circular(10),
@@ -590,7 +588,7 @@ class PokemonListViewModel with ChangeNotifier {
                     Text('Dark Mode', style: getSettingsItemStyle()),
                     const Spacer(),
                     Switch(
-                      activeColor: Colors.red,
+                      activeColor: Color(0xFF702fc8),
                       value: _isDarkMode, // ViewModel의 상태 사용
                       onChanged:
                           (value) => toggleDarkMode(value, onThemeChanged),

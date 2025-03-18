@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/evolution_stage.dart';
-import 'package:pokedex_app/models/pokemon_detail.dart';
-import 'package:pokedex_app/models/pokemon_type_colors.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/repositories/pokemon_repository.dart';
-import 'package:pokedex_app/views/screens/pokedex_screen.dart';
+import 'package:poke_master/models/evolution_stage.dart';
+import 'package:poke_master/models/pokemon_detail.dart';
+import 'package:poke_master/models/pokemon_type_colors.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/views/screens/pokedex_screen.dart';
 
 class PokemonDetailViewModel with ChangeNotifier {
   final PokemonRepository _repository;

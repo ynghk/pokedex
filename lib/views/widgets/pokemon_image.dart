@@ -1,7 +1,7 @@
 //포켓몬 이미지 클래스 분리
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
 
 class PokemonImage extends StatelessWidget {
   final String imageUrl; // 이미지 URL 전달
