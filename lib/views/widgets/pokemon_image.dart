@@ -2,8 +2,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/viewmodels/bookmark_viewmodel.dart';
-import 'package:provider/provider.dart';
 
 class PokemonImage extends StatelessWidget {
   final String imageUrl; // 이미지 URL 전달

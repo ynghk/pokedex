@@ -6,14 +6,54 @@ import 'package:pokedex_app/models/pokemon_type_colors.dart';
 import 'package:pokedex_app/repositories/pokemon_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// 정렬 방식 열거형
+enum BookmarkSortOption {
+  numberAscending, // 번호 오름차순 (기본값)
+  numberDescending, // 번호 내림차순
+  nameAscending, // 이름 오름차순
+  nameDescending, // 이름 내림차순
+  dateAddedNewest, // 추가 시간 내림차순(최신순)
+  dateAddedOldest, // 추가 시간 오름차순(오래된순)
+}
+
+// 북마크된 포켓몬 아이템 클래스
+class BookmarkedItem {
+  final PokedexEntry pokemon;
+  final DateTime dateAdded;
+
+  BookmarkedItem({required this.pokemon, required this.dateAdded});
+
+  factory BookmarkedItem.fromJson(Map<String, dynamic> json) {
+    return BookmarkedItem(
+      pokemon: PokedexEntry(
+        id: json['pokemon']['id'],
+        name: json['pokemon']['name'],
+        url: json['pokemon']['url'],
+      ),
+      dateAdded: DateTime.parse(json['dateAdded']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pokemon': pokemon.toJson(),
+      'dateAdded': dateAdded.toIso8601String(),
+    };
+  }
+}
+
 class BookmarkViewModel with ChangeNotifier {
   final PokemonRepository repository;
-  final List<PokedexEntry> _bookmarkedPokemons = [];
+  final List<BookmarkedItem> _bookmarkedItems = [];
   bool _isInitialized = false;
 
   // 검색 관련 변수들 추가
   final TextEditingController textController = TextEditingController();
   String _searchQuery = '';
+
+  // 정렬 관련 변수
+  BookmarkSortOption _sortOption =
+      BookmarkSortOption.numberAscending; // 기본값: 번호 오름차순
 
   // 타입 캐시 추가
   final Map<int, List<String>> _typeCache = {};
@@ -22,6 +62,15 @@ class BookmarkViewModel with ChangeNotifier {
     _init();
     // 검색어 변경 리스너 추가
     textController.addListener(_onSearchChanged);
+  }
+
+  // 정렬 옵션 getter
+  BookmarkSortOption get sortOption => _sortOption;
+
+  // 정렬 옵션 업데이트 메서드
+  void updateSortOption(BookmarkSortOption option) {
+    _sortOption = option;
+    notifyListeners();
   }
 
   // 검색어 변경 감지 메서드
@@ -42,31 +91,72 @@ class BookmarkViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 북마크 목록 getter
+  // 북마크된 포켓몬 목록 getter (BookmarkedItem에서 PokedexEntry 추출)
   List<PokedexEntry> get bookmarkedPokemons {
     // 초기화되지 않았으면 빈 리스트 반환
     if (!_isInitialized) return [];
 
-    // 검색어가 비어있으면 전체 목록 반환
-    if (_searchQuery.isEmpty) {
-      return List.unmodifiable(_bookmarkedPokemons);
+    // 먼저 BookmarkedItem 리스트 필터링 및 정렬
+    List<BookmarkedItem> filteredItems = _getFilteredAndSortedItems();
+
+    // 필터링 및 정렬된 BookmarkedItem에서 PokedexEntry만 추출하여 반환
+    return List.unmodifiable(
+      filteredItems.map((item) => item.pokemon).toList(),
+    );
+  }
+
+  // 필터링 및 정렬된 BookmarkedItem 목록 반환
+  List<BookmarkedItem> _getFilteredAndSortedItems() {
+    // 검색 필터링
+    List<BookmarkedItem> filtered =
+        _searchQuery.isEmpty
+            ? List.from(_bookmarkedItems)
+            : _bookmarkedItems
+                .where(
+                  (item) =>
+                      item.pokemon.name.toLowerCase().contains(_searchQuery) ||
+                      item.pokemon.id.toString().contains(_searchQuery),
+                )
+                .toList();
+
+    // 정렬 적용
+    switch (_sortOption) {
+      case BookmarkSortOption.numberAscending:
+        filtered.sort((a, b) => a.pokemon.id.compareTo(b.pokemon.id));
+        break;
+      case BookmarkSortOption.numberDescending:
+        filtered.sort((a, b) => b.pokemon.id.compareTo(a.pokemon.id));
+        break;
+      case BookmarkSortOption.nameAscending:
+        filtered.sort(
+          (a, b) => a.pokemon.name.toLowerCase().compareTo(
+            b.pokemon.name.toLowerCase(),
+          ),
+        );
+        break;
+      case BookmarkSortOption.nameDescending:
+        filtered.sort(
+          (a, b) => b.pokemon.name.toLowerCase().compareTo(
+            a.pokemon.name.toLowerCase(),
+          ),
+        );
+        break;
+      case BookmarkSortOption.dateAddedNewest:
+        filtered.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        break;
+      case BookmarkSortOption.dateAddedOldest:
+        filtered.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        break;
     }
 
-    // 검색 필터링된 목록 반환
-    return List.unmodifiable(
-      _bookmarkedPokemons
-          .where(
-            (pokemon) =>
-                pokemon.name.toLowerCase().contains(_searchQuery) ||
-                pokemon.id.toString().contains(_searchQuery),
-          )
-          .toList(),
-    );
+    return filtered;
   }
 
   // 북마크 원본 목록 (필터링 전)
   List<PokedexEntry> get allBookmarkedPokemons {
-    return List.unmodifiable(_bookmarkedPokemons);
+    return List.unmodifiable(
+      _bookmarkedItems.map((item) => item.pokemon).toList(),
+    );
   }
 
   @override
@@ -96,18 +186,33 @@ class BookmarkViewModel with ChangeNotifier {
 
       if (bookmarkData != null && bookmarkData.isNotEmpty) {
         final List<dynamic> jsonList = jsonDecode(bookmarkData);
-        _bookmarkedPokemons.clear();
-        _bookmarkedPokemons.addAll(
-          jsonList
-              .map(
-                (json) => PokedexEntry(
-                  id: json['id'],
-                  name: json['name'],
-                  url: json['url'],
-                ),
-              )
-              .toList(),
-        );
+        _bookmarkedItems.clear();
+
+        // 형식 확인 및 변환
+        if (jsonList.isNotEmpty &&
+            jsonList[0] is Map &&
+            jsonList[0].containsKey('dateAdded')) {
+          // 새 형식 (BookmarkedItem)
+          _bookmarkedItems.addAll(
+            jsonList.map((json) => BookmarkedItem.fromJson(json)).toList(),
+          );
+        } else {
+          // 기존 형식 (PokedexEntry)에서 변환 - 현재 시간 사용
+          _bookmarkedItems.addAll(
+            jsonList
+                .map(
+                  (json) => BookmarkedItem(
+                    pokemon: PokedexEntry(
+                      id: json['id'],
+                      name: json['name'],
+                      url: json['url'],
+                    ),
+                    dateAdded: DateTime.now(),
+                  ),
+                )
+                .toList(),
+          );
+        }
       }
     } catch (e) {
       print("북마크 데이터 파싱 오류: $e");
@@ -118,7 +223,7 @@ class BookmarkViewModel with ChangeNotifier {
   Future<void> _saveBookmarks() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonList = _bookmarkedPokemons.map((p) => p.toJson()).toList();
+      final jsonList = _bookmarkedItems.map((item) => item.toJson()).toList();
       await prefs.setString('bookmarked_pokemons', jsonEncode(jsonList));
     } catch (e) {
       print("북마크 저장 오류: $e");
@@ -128,9 +233,11 @@ class BookmarkViewModel with ChangeNotifier {
   // 북마크 추가/제거
   Future<void> toggleBookmark(PokedexEntry pokemon) async {
     if (isBookmarked(pokemon)) {
-      _bookmarkedPokemons.removeWhere((p) => p.id == pokemon.id);
+      _bookmarkedItems.removeWhere((item) => item.pokemon.id == pokemon.id);
     } else {
-      _bookmarkedPokemons.add(pokemon);
+      _bookmarkedItems.add(
+        BookmarkedItem(pokemon: pokemon, dateAdded: DateTime.now()),
+      );
     }
     await _saveBookmarks();
     notifyListeners();
@@ -138,7 +245,7 @@ class BookmarkViewModel with ChangeNotifier {
 
   // 북마크 여부 확인
   bool isBookmarked(PokedexEntry pokemon) {
-    return _bookmarkedPokemons.any((p) => p.id == pokemon.id);
+    return _bookmarkedItems.any((item) => item.pokemon.id == pokemon.id);
   }
 
   // 포켓몬 타입 가져오기
