@@ -39,14 +39,13 @@ class PokemonImage extends StatelessWidget {
               imageUrl: imageUrl,
 
               placeholder:
-                  (context, url) => const Center(
-                    child: CircularProgressIndicator(
-                      constraints: BoxConstraints.tightFor(
-                        width: 80,
-                        height: 80,
-                      ),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.blueAccent,
+                  (context, url) => Center(
+                    child: SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: Image.asset(
+                        'assets/pokeball_spin.gif',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
