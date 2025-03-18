@@ -62,22 +62,22 @@ class PokedexScreen extends StatelessWidget {
                           ),
                 ),
               ),
-              iconTheme: IconThemeData(color: Colors.white, size: 30),
+              iconTheme: IconThemeData(
+                color:
+                    detailViewModel.getAppBarColor().computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white,
+              ),
               actions: [
                 Consumer<BookmarkViewModel>(
                   builder: (context, bookmarkViewModel, child) {
-                    return InkWell(
-                      splashColor: Colors.transparent,
-                      onTap: () => bookmarkViewModel.toggleBookmark(pokedex),
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 12.0),
-                        child: Image.asset(
-                          bookmarkViewModel.isBookmarked(pokedex)
-                              ? 'assets/bookmark_pokeball.png'
-                              : 'assets/bookmark_pokeball_shadow.png',
-                          width: 40,
-                          height: 40,
-                        ),
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: IconButton(
+                        icon: Icon(Icons.home_rounded, size: 30),
+                        onPressed: () {
+                          Navigator.popUntil(context, (route) => route.isFirst);
+                        },
                       ),
                     );
                   },
@@ -170,6 +170,7 @@ class PokedexScreen extends StatelessWidget {
               imageUrl: shinyViewModel.getPokemonImageUrl(pokedex),
               isShiny: shinyViewModel.isShiny,
               onToggleShiny: shinyViewModel.toggleShiny,
+              pokedex: pokedex,
             ),
           ),
 
@@ -190,16 +191,46 @@ class PokedexScreen extends StatelessWidget {
 
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: RichText(
-                  text: TextSpan(
-                    text: 'Types: ',
-                    style: detailViewModel.getTextStyle(
-                      context,
-                      fontSize: 24,
-                      isBold: true,
+                child: Row(
+                  children: [
+                    Text(
+                      'Types: ',
+                      style: detailViewModel.getTextStyle(
+                        context,
+                        fontSize: 24,
+                        isBold: true,
+                      ),
                     ),
-                    children: detailViewModel.getTypeColoredTextSpans(),
-                  ),
+                    Text.rich(
+                      TextSpan(
+                        children: detailViewModel.getTypeColoredTextSpans(),
+                      ),
+                    ),
+
+                    Spacer(),
+                    Consumer<BookmarkViewModel>(
+                      builder: (context, bookmarkViewModel, child) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 30.0),
+                          child: InkWell(
+                            splashColor: Colors.transparent,
+                            onTap:
+                                () => bookmarkViewModel.toggleBookmark(pokedex),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: Image.asset(
+                                bookmarkViewModel.isBookmarked(pokedex)
+                                    ? 'assets/bookmark_pokeball.png'
+                                    : 'assets/bookmark_pokeball_shadow.png',
+                                width: 50,
+                                height: 50,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
 

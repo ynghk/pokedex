@@ -97,7 +97,7 @@ class PokemonListViewModel with ChangeNotifier {
       return _pokemons;
     }
 
-    return _pokemons
+    return _allPokemons
         .where(
           (pokemon) =>
               pokemon.name.toLowerCase().contains(_searchQuery) ||
@@ -138,8 +138,9 @@ class PokemonListViewModel with ChangeNotifier {
   ) {
     return (ScrollNotification notification) {
       if (notification is ScrollUpdateNotification) {
+        // 스크롤 방향에 상관없이 스크롤이 발생하면 키보드 내리기
         if (notification.scrollDelta != null &&
-            notification.scrollDelta! < 0 &&
+            notification.scrollDelta != 0 &&
             FocusScope.of(context).hasFocus) {
           FocusScope.of(context).unfocus();
         }
@@ -198,7 +199,7 @@ class PokemonListViewModel with ChangeNotifier {
       isLoading = false;
       notifyListeners();
       scrollToTop();
-      Navigator.pop(context);
+      clearSearch();
     }
   }
 

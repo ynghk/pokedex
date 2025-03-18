@@ -75,7 +75,7 @@ class EvolutionStageWidget extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children:
             displayStages.map((stage) {
               return Row(
@@ -105,18 +105,15 @@ class EvolutionStageWidget extends StatelessWidget {
                         ),
 
                         // 포켓몬 이름
-                        SizedBox(
-                          width: 80,
-                          child: Text(
-                            stage.name.capitalize(),
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            style: viewModel.getTextStyle(
-                              context,
-                              fontSize: 12,
-                              isBold: true,
-                            ),
+                        Text(
+                          stage.name.capitalize(),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          style: viewModel.getTextStyle(
+                            context,
+                            fontSize: 12,
+                            isBold: true,
                           ),
                         ),
 
@@ -146,7 +143,10 @@ class EvolutionStageWidget extends StatelessWidget {
 
                   // 화살표 (마지막이 아니면)
                   if (stage != displayStages.last)
-                    Icon(Icons.arrow_forward_rounded, size: 30),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Icon(Icons.arrow_forward_rounded, size: 30),
+                    ),
                 ],
               );
             }).toList(),
