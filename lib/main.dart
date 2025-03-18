@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex_app/repositories/pokemon_repository.dart';
+import 'package:pokedex_app/viewmodels/bookmark_viewmodel.dart';
+import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:pokedex_app/views/screens/pokemon_list_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final repository = PokemonRepository();
 
   runApp(
-    Provider<PokemonRepository>.value(
-      value: repository,
+    MultiProvider(
+      providers: [
+        Provider<PokemonRepository>(create: (_) => repository),
+        ChangeNotifierProvider<BookmarkViewModel>(
+          create: (_) => BookmarkViewModel(repository: repository),
+        ),
+        ChangeNotifierProvider<PokemonListViewModel>(
+          create: (_) => PokemonListViewModel(repository),
+        ),
+      ],
       child: MyApp(repository: repository),
     ),
   );
@@ -17,7 +28,7 @@ void main() async {
 class MyApp extends StatefulWidget {
   final PokemonRepository repository;
 
-  const MyApp({Key? key, required this.repository}) : super(key: key);
+  const MyApp({super.key, required this.repository});
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -35,6 +46,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Pokedex App',
       theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
       home: Provider<PokemonRepository>.value(

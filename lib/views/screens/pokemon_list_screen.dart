@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pokedex_app/models/pokemon_type_colors.dart';
 import 'package:pokedex_app/repositories/pokemon_repository.dart';
 import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
+import 'package:pokedex_app/views/screens/bookmark_screen.dart';
 import 'package:provider/provider.dart';
 
 class PokemonListScreen extends StatelessWidget {
@@ -28,7 +29,7 @@ class PokemonListScreen extends StatelessWidget {
         builder: (context, viewModel, child) {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: viewModel.unfocusKeyboard(context), // 뷰모델로 이동
+            onTap: viewModel.unfocusKeyboard(context),
             child: Scaffold(
               appBar: AppBar(
                 backgroundColor: Colors.red,
@@ -36,7 +37,10 @@ class PokemonListScreen extends StatelessWidget {
                   builder:
                       (context) => IconButton(
                         icon: Icon(Icons.list, size: 40, color: Colors.white),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
+                        onPressed: () {
+                          FocusScope.of(context).unfocus(); // 키보드 숨기기
+                          Scaffold.of(context).openDrawer();
+                        },
                       ),
                 ),
                 title: Center(
@@ -45,7 +49,11 @@ class PokemonListScreen extends StatelessWidget {
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(right: 12.0),
-                    child: Image.asset('assets/pokeball_icon.png', width: 40),
+                    child: Icon(
+                      Icons.tune_rounded,
+                      size: 30,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -55,24 +63,27 @@ class PokemonListScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Container(
-                        height: 120,
+                        height: 100,
                         decoration: viewModel.getDrawerHeaderDecoration(),
                         child: Row(
                           children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.close_rounded,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                            ),
                             Expanded(
                               child: Center(
                                 child: Image.asset(
                                   'assets/poke_menu_title.png',
                                   fit: BoxFit.fill,
                                 ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                                onPressed: () => Navigator.pop(context),
                               ),
                             ),
                           ],
@@ -84,6 +95,29 @@ class PokemonListScreen extends StatelessWidget {
                         child: ListView(
                           padding: EdgeInsets.zero,
                           children: [
+                            InkWell(
+                              onTap: () {
+                                // 먼저 Drawer 닫기
+                                Navigator.pop(context);
+                                // 그 다음 북마크 화면으로 이동
+                                _navigateToBookmarks(context, isDarkMode);
+                              },
+                              child: ListTile(
+                                leading: Image.asset(
+                                  'assets/bookmark_pokeball.png',
+                                  width: 30,
+                                ),
+                                title: Text(
+                                  'My Pokéball',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                trailing: Icon(Icons.chevron_right_rounded),
+                              ),
+                            ),
+                            Divider(height: 1, color: Colors.grey),
                             _buildRegionTile(context, viewModel, 'Kanto'),
                             Divider(height: 1, color: Colors.grey),
                             _buildRegionTile(context, viewModel, 'Johto'),
@@ -103,6 +137,7 @@ class PokemonListScreen extends StatelessWidget {
                             _buildRegionTile(context, viewModel, 'Paldea'),
                             Divider(height: 1, color: Colors.grey),
                             _buildRegionTile(context, viewModel, 'Hisui'),
+                            Divider(height: 1, color: Colors.grey),
                           ],
                         ),
                       ),
@@ -169,11 +204,43 @@ class PokemonListScreen extends StatelessWidget {
                                   ],
                                 ),
                               )
+                              : viewModel.filteredPokemons.isEmpty
+                              ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/pikachu_shadow.png',
+                                      width: 100,
+                                      height: 100,
+                                    ),
+                                    SizedBox(height: 20),
+                                    Text(
+                                      'No Pokémon found',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Try a different search term',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
                               : NotificationListener<ScrollNotification>(
                                 onNotification: viewModel
                                     .handleScrollNotification(context),
                                 child: PokemonList(
                                   viewModel: viewModel,
+                                  scrollController: viewModel.scrollController,
                                 ),
                               ),
                     ),
@@ -218,30 +285,46 @@ class PokemonListScreen extends StatelessWidget {
           ),
         ],
       ),
-      onTap:
-          () => viewModel.selectRegion(region, viewModel.scrollToTop, context),
+      onTap: () {
+        // 먼저 Drawer 닫기
+        Navigator.pop(context);
+        // 그 다음 지역 선택 로직 실행
+        viewModel.selectRegion(region, viewModel.scrollToTop, context);
+      },
+    );
+  }
+
+  void _navigateToBookmarks(BuildContext context, bool isDarkMode) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookmarkScreen(isDarkMode: isDarkMode),
+      ),
     );
   }
 }
 
 class PokemonList extends StatelessWidget {
   final PokemonListViewModel viewModel;
+  final ScrollController scrollController;
 
   const PokemonList({
     super.key,
     required this.viewModel,
+    required this.scrollController,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      controller: viewModel.scrollController,
+      controller: scrollController,
       physics: AlwaysScrollableScrollPhysics(),
       cacheExtent: 1000,
       itemCount: viewModel.filteredPokemons.length,
       itemBuilder: (context, index) {
         var pokemon = viewModel.filteredPokemons[index];
         return InkWell(
+          splashColor: Colors.transparent,
           onTap: () => viewModel.navigateToDetail(context, pokemon),
           child: Padding(
             padding: viewModel.getListItemPadding(),
@@ -279,7 +362,7 @@ class PokemonList extends StatelessWidget {
 
                 //포켓몬 이름 표시해주는 것.
                 Text(
-                  '${pokemon.id}. ${pokemon.name.capitalize()}',
+                  '${pokemon.id}. ${StringCapitalize(pokemon.name).capitalize()}',
                   style: viewModel.getListItemStyle(),
                 ),
 
