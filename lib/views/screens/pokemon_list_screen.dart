@@ -16,6 +16,15 @@ class PokemonListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    create:
+    (_) {
+      final viewModel = Provider.of<PokemonListViewModel>(
+        context,
+        listen: false,
+      );
+      viewModel.initDarkMode(isDarkMode); // 다크 모드만 초기화
+      return viewModel;
+    };
     final repository = Provider.of<PokemonRepository>(context, listen: false);
     return ChangeNotifierProvider(
       create: (_) {
@@ -377,7 +386,8 @@ class PokemonListScreen extends StatelessWidget {
                           Theme.of(context).scaffoldBackgroundColor,
                       color: Color(0xFF702fc8),
                       onRefresh: () async {
-                        await viewModel.loadInitialPokemons();
+                        // 새로고침 시 현재 선택된 지역 유지
+                        await viewModel.loadPokemons();
                         viewModel.scrollToTop(); // 새로고침 후 맨 위로
                       },
                       child:
