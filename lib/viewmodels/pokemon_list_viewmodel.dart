@@ -605,7 +605,7 @@ class PokemonListViewModel with ChangeNotifier {
                     DropdownButton<String>(
                       value: selectedLanguage,
                       items:
-                          ['English', '한국어'].map((String lang) {
+                          ['English'].map((String lang) {
                             return DropdownMenuItem<String>(
                               value: lang,
                               child: Text(lang),
