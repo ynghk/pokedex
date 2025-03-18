@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/models/pokemon_type_colors.dart';
-import 'package:pokedex_app/repositories/pokemon_repository.dart';
-import 'package:pokedex_app/viewmodels/bookmark_viewmodel.dart';
-import 'package:pokedex_app/viewmodels/pokemon_detail_viewmodel.dart';
-import 'package:pokedex_app/viewmodels/shiny_pokemon_viewmodel.dart';
-import 'package:pokedex_app/views/widgets/evolution_stage_widget.dart';
-import 'package:pokedex_app/views/widgets/pokemon_image.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokemon_type_colors.dart';
+import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
+import 'package:poke_master/viewmodels/pokemon_detail_viewmodel.dart';
+import 'package:poke_master/viewmodels/shiny_pokemon_viewmodel.dart';
+import 'package:poke_master/views/widgets/evolution_stage_widget.dart';
+import 'package:poke_master/views/widgets/pokemon_image.dart';
 import 'package:provider/provider.dart';
 
 //테오키스 폼, 기라티나 폼, 변경 구현
@@ -89,7 +89,7 @@ class PokedexScreen extends StatelessWidget {
                 SafeArea(
                   child: RefreshIndicator(
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    color: Colors.red,
+                    color: Color(0xFF702fc8),
                     onRefresh: () async {
                       // 새로고침 시 데이터 다시 로드
                       await detailViewModel.fetchDataWithScrollReset(context);

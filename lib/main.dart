@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/repositories/pokemon_repository.dart';
-import 'package:pokedex_app/viewmodels/bookmark_viewmodel.dart';
-import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
-import 'package:pokedex_app/views/screens/pokemon_list_screen.dart';
+import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
+import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
+import 'package:poke_master/views/screens/pokemon_list_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final repository = PokemonRepository();
-
   runApp(
     MultiProvider(
       providers: [

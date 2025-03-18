@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
 
 class ShinyPokemonViewmodel with ChangeNotifier {
   bool _isShiny = false; // 이로치 상태 기본값 설정

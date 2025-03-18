@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:pokedex_app/models/evolution_stage.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/models/pokemon_detail.dart';
+import 'package:poke_master/models/evolution_stage.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokemon_detail.dart';
 
 class ApiService {
   Future<List<PokedexEntry>> getPokemonData({int retries = 3}) async {

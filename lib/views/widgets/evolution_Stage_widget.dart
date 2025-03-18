@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/evolution_stage.dart';
-import 'package:pokedex_app/models/pokemon_type_colors.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/viewmodels/pokemon_detail_viewmodel.dart';
-import 'package:pokedex_app/views/screens/pokedex_screen.dart';
+import 'package:poke_master/models/evolution_stage.dart';
+import 'package:poke_master/models/pokemon_type_colors.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/viewmodels/pokemon_detail_viewmodel.dart';
+import 'package:poke_master/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
 
 class EvolutionStageWidget extends StatelessWidget {

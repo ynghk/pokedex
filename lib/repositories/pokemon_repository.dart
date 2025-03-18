@@ -1,7 +1,7 @@
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/models/pokemon_detail.dart';
-import 'package:pokedex_app/models/evolution_stage.dart';
-import 'package:pokedex_app/services/api_service.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokemon_detail.dart';
+import 'package:poke_master/models/evolution_stage.dart';
+import 'package:poke_master/services/api_service.dart';
 
 class PokemonRepository {
   final ApiService _apiService = ApiService();

@@ -1,9 +1,9 @@
 // lib/viewmodels/bookmark_viewmodel.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokedex_entry.dart';
-import 'package:pokedex_app/models/pokemon_type_colors.dart';
-import 'package:pokedex_app/repositories/pokemon_repository.dart';
+import 'package:poke_master/models/pokedex_entry.dart';
+import 'package:poke_master/models/pokemon_type_colors.dart';
+import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // 정렬 방식 열거형
@@ -53,7 +53,7 @@ class BookmarkViewModel with ChangeNotifier {
 
   // 정렬 관련 변수
   BookmarkSortOption _sortOption =
-      BookmarkSortOption.numberAscending; // 기본값: 번호 오름차순
+      BookmarkSortOption.dateAddedNewest; // 기본값: 추가 시간 내림차순
 
   // 타입 캐시 추가
   final Map<int, List<String>> _typeCache = {};
@@ -121,11 +121,11 @@ class BookmarkViewModel with ChangeNotifier {
 
     // 정렬 적용
     switch (_sortOption) {
-      case BookmarkSortOption.numberAscending:
-        filtered.sort((a, b) => a.pokemon.id.compareTo(b.pokemon.id));
+      case BookmarkSortOption.dateAddedNewest:
+        filtered.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
         break;
-      case BookmarkSortOption.numberDescending:
-        filtered.sort((a, b) => b.pokemon.id.compareTo(a.pokemon.id));
+      case BookmarkSortOption.dateAddedOldest:
+        filtered.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
         break;
       case BookmarkSortOption.nameAscending:
         filtered.sort(
@@ -141,11 +141,11 @@ class BookmarkViewModel with ChangeNotifier {
           ),
         );
         break;
-      case BookmarkSortOption.dateAddedNewest:
-        filtered.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+      case BookmarkSortOption.numberAscending:
+        filtered.sort((a, b) => a.pokemon.id.compareTo(b.pokemon.id));
         break;
-      case BookmarkSortOption.dateAddedOldest:
-        filtered.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+      case BookmarkSortOption.numberDescending:
+        filtered.sort((a, b) => b.pokemon.id.compareTo(a.pokemon.id));
         break;
     }
 
@@ -246,6 +246,16 @@ class BookmarkViewModel with ChangeNotifier {
   // 북마크 여부 확인
   bool isBookmarked(PokedexEntry pokemon) {
     return _bookmarkedItems.any((item) => item.pokemon.id == pokemon.id);
+  }
+
+  // 북마크 새로고침 메서드
+  Future<void> refreshBookmarks() async {
+    try {
+      await _loadBookmarks();
+      notifyListeners();
+    } catch (e) {
+      print("북마크 새로고침 실패: $e");
+    }
   }
 
   // 포켓몬 타입 가져오기

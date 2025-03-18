@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokemon_detail.dart';
+import 'package:poke_master/models/pokemon_detail.dart';
 
 final pokemonTypeColors = {
   'grass': Color(0xFF7AC74C),
