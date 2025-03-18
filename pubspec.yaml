@@ -39,6 +39,7 @@ dependencies:
   path_provider: ^2.1.1
   provider: ^6.1.2
   shared_preferences: ^2.5.2
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
