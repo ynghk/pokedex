@@ -5,12 +5,20 @@ import 'package:pokedex_app/repositories/pokemon_repository.dart';
 import 'package:pokedex_app/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
 
+// 정렬 방식 열거형
+enum SortOption {
+  numberAscending, // 번호 오름차순 (기본값)
+  numberDescending, // 번호 내림차순
+  nameAscending, // 이름 오름차순
+  nameDescending, // 이름 내림차순
+}
+
 class PokemonListViewModel with ChangeNotifier {
   final PokemonRepository _repository;
   List<PokedexEntry> _allPokemons = [];
   List<PokedexEntry> _pokemons = [];
   String _searchQuery = '';
-  String _selectedRegion = 'Kanto'; // 기본 지역
+  String _selectedRegion;
   String _selectedLanguage = 'English';
   bool _isDarkMode = false; // 다크모드 상태 추가
   bool isLoading = true;
@@ -18,13 +26,41 @@ class PokemonListViewModel with ChangeNotifier {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final Map<int, List<String>> typeCache = {};
+  // 필터링 및 정렬 관련 변수
+  final List<String> _availableTypes = [
+    'normal',
+    'fire',
+    'water',
+    'electric',
+    'grass',
+    'ice',
+    'fighting',
+    'poison',
+    'bug',
+    'ground',
+    'flying',
+    'psychic',
+    'rock',
+    'ghost',
+    'dragon',
+    'dark',
+    'steel',
+    'fairy',
+  ];
+  final Set<String> _selectedTypes = {}; // 선택된 타입들
+  SortOption _sortOption = SortOption.numberAscending; // 기본 정렬: 번호 오름차순
 
+  final Map<int, List<String>> typeCache = {};
   // 생성자 변경
-  PokemonListViewModel(this._repository) {
+  PokemonListViewModel(this._repository) : _selectedRegion = '' {
     // 검색어 변경 리스너 추가
     _textController.addListener(_onSearchChanged);
   }
+
+  // 타입 및 정렬 관련 getter
+  List<String> get availableTypes => _availableTypes;
+  Set<String> get selectedTypes => _selectedTypes;
+  SortOption get sortOption => _sortOption;
 
   // 검색어 변경 감지 메서드
   void _onSearchChanged() {
@@ -41,6 +77,48 @@ class PokemonListViewModel with ChangeNotifier {
   void clearSearch() {
     _textController.clear();
     _searchQuery = '';
+    notifyListeners();
+  }
+
+  // 타입 필터 토글
+  void toggleTypeFilter(String type) {
+    if (_selectedTypes.contains(type)) {
+      _selectedTypes.remove(type);
+    } else {
+      _selectedTypes.add(type);
+    }
+    notifyListeners();
+  }
+
+  // 타입 필터 초기화
+  void clearTypeFilters() {
+    _selectedTypes.clear();
+    notifyListeners();
+  }
+
+  // 정렬 옵션 변경
+  void updateSortOption(SortOption option) {
+    _sortOption = option;
+    notifyListeners();
+  }
+
+  // 타입 별 캐시 미리 로드
+  Future<void> preloadTypeCache() async {
+    for (var pokemon in _allPokemons) {
+      // _pokemons 대신 _allPokemons 사용
+      if (!typeCache.containsKey(pokemon.getPokemonId())) {
+        try {
+          final types = await getPokemonTypes(pokemon.getPokemonId());
+          // 비동기 작업 중 dispose 됐을 수 있으므로 체크
+          if (types.isNotEmpty) {
+            typeCache[pokemon.getPokemonId()] = types;
+          }
+        } catch (e) {
+          print('Failed to load types for ${pokemon.name}: $e');
+        }
+      }
+    }
+    // 모든 타입 로드 후 갱신
     notifyListeners();
   }
 
@@ -93,17 +171,58 @@ class PokemonListViewModel with ChangeNotifier {
 
   // 필터링된 포켓몬 리스트
   List<PokedexEntry> get filteredPokemons {
-    if (_searchQuery.isEmpty) {
-      return _pokemons;
+    // 검색어가 있으면 전체 포켓몬에서 검색 (지역 제한 없음)
+    List<PokedexEntry> filtered =
+        _searchQuery.isEmpty
+            ? List.from(_pokemons) // 검색어 없을 때는 현재 지역 포켓몬만
+            : _allPokemons // 검색어 있을 때는 모든 지역 포켓몬에서 검색
+                .where(
+                  (pokemon) =>
+                      pokemon.name.toLowerCase().contains(_searchQuery) ||
+                      pokemon.id.toString().contains(_searchQuery),
+                )
+                .toList();
+
+    // 타입 필터 적용 (필터가 선택된 경우)
+    if (_selectedTypes.isNotEmpty) {
+      filtered =
+          filtered.where((pokemon) {
+            // 포켓몬의 타입 확인 (캐시에 있으면 사용, 없으면 비동기 로드 필요)
+            if (!typeCache.containsKey(pokemon.getPokemonId())) {
+              return false; // 타입을 모르면 일단 표시하지 않음
+            }
+
+            // 포켓몬이 선택된 타입 중 하나라도 가지고 있으면 포함
+            List<String> pokemonTypes = typeCache[pokemon.getPokemonId()]!;
+            return _selectedTypes.any(
+              (type) => pokemonTypes
+                  .map((t) => t.toLowerCase())
+                  .contains(type.toLowerCase()),
+            );
+          }).toList();
     }
 
-    return _allPokemons
-        .where(
-          (pokemon) =>
-              pokemon.name.toLowerCase().contains(_searchQuery) ||
-              pokemon.id.toString().contains(_searchQuery),
-        )
-        .toList();
+    // 정렬 적용
+    switch (_sortOption) {
+      case SortOption.numberAscending:
+        filtered.sort((a, b) => a.id.compareTo(b.id));
+        break;
+      case SortOption.numberDescending:
+        filtered.sort((a, b) => b.id.compareTo(a.id));
+        break;
+      case SortOption.nameAscending:
+        filtered.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+      case SortOption.nameDescending:
+        filtered.sort(
+          (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        );
+        break;
+    }
+
+    return filtered;
   }
 
   @override
@@ -156,6 +275,7 @@ class PokemonListViewModel with ChangeNotifier {
     notifyListeners();
     try {
       _allPokemons = await _repository.getPokemonsByRegion('Kanto');
+      _selectedRegion = 'Kanto';
       _pokemons =
           _allPokemons
               .where((p) => _getRegionForPokemon(p.id) == _selectedRegion)
@@ -172,6 +292,7 @@ class PokemonListViewModel with ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+      preloadTypeCache();
     }
   }
 
@@ -183,6 +304,8 @@ class PokemonListViewModel with ChangeNotifier {
   ) async {
     _selectedRegion = region;
     isLoading = true;
+    // 지역 변경 시 타입 필터 초기화
+    _selectedTypes.clear();
     notifyListeners();
     try {
       if (_allPokemons.length < 1025 && region != 'Kanto') {

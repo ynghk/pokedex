@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_app/models/pokemon_type_colors.dart';
 import 'package:pokedex_app/repositories/pokemon_repository.dart';
 import 'package:pokedex_app/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:pokedex_app/views/screens/bookmark_screen.dart';
@@ -21,8 +20,10 @@ class PokemonListScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) {
         final viewModel = PokemonListViewModel(repository);
-        viewModel.loadInitialPokemons(); // 초기 로딩 여기서 시작
+        viewModel
+            .loadInitialPokemons(); // 초기 로딩 여기서 시작 (이 안에서 preloadTypeCache 호출됨)
         viewModel.initDarkMode(isDarkMode); // 다크 모드 초기화
+        // 타입 캐시 초기화 코드 제거
         return viewModel;
       },
       child: Consumer<PokemonListViewModel>(
@@ -44,16 +45,27 @@ class PokemonListScreen extends StatelessWidget {
                       ),
                 ),
                 title: Center(
-                  child: Image.asset('assets/pokedex_title.png', width: 140),
+                  child: Image.asset('assets/pokemaster_title.png', width: 220),
                 ),
                 actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: Icon(
-                      Icons.tune_rounded,
-                      size: 30,
-                      color: Colors.white,
-                    ),
+                  Builder(
+                    builder:
+                        (context) => InkWell(
+                          onTap: () {
+                            // 키보드 숨기기
+                            FocusScope.of(context).unfocus();
+                            // 오른쪽 Drawer 열기
+                            Scaffold.of(context).openEndDrawer();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 12.0),
+                            child: Icon(
+                              Icons.tune_rounded,
+                              size: 30,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                   ),
                 ],
               ),
@@ -151,6 +163,162 @@ class PokemonListScreen extends StatelessWidget {
                               isDarkMode,
                               onThemeChanged,
                             ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // 오른쪽 Drawer 구현 (필터 및 정렬)
+              endDrawer: SafeArea(
+                child: Drawer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Drawer 헤더
+                      Container(
+                        height: 100,
+                        decoration: const BoxDecoration(color: Colors.red),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/filter_sort_title.png',
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(height: 1, color: Colors.grey),
+                      // 필터 섹션
+                      Expanded(
+                        child: ListView(
+                          padding: EdgeInsets.all(16),
+                          children: [
+                            // 타입 필터 섹션
+                            Text(
+                              'Filter by Type',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+
+                            // 선택된 필터 초기화 버튼
+                            if (viewModel.selectedTypes.isNotEmpty)
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  icon: Icon(
+                                    Icons.clear_all,
+                                    color: Colors.red,
+                                  ),
+                                  label: Text(
+                                    'Clear Filters',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  onPressed: () {
+                                    viewModel.clearTypeFilters();
+                                  },
+                                ),
+                              ),
+
+                            // 타입 필터 칩 그리드
+                            Wrap(
+                              spacing: 6.0,
+                              runSpacing: 6.0,
+                              children:
+                                  viewModel.availableTypes.map((type) {
+                                    final isSelected = viewModel.selectedTypes
+                                        .contains(type);
+                                    final color = viewModel.getTypeColor(type);
+                                    return FilterChip(
+                                      label: Text(
+                                        StringCapitalize(type).capitalize(),
+                                        style: TextStyle(
+                                          color:
+                                              color.computeLuminance() > 0.5
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      backgroundColor: color.withOpacity(0.5),
+                                      selectedColor: color,
+                                      selected: isSelected,
+                                      checkmarkColor:
+                                          color.computeLuminance() > 0.5
+                                              ? Colors.black
+                                              : Colors.white,
+                                      onSelected: (bool selected) {
+                                        viewModel.toggleTypeFilter(type);
+                                      },
+                                    );
+                                  }).toList(),
+                            ),
+
+                            SizedBox(height: 10),
+                            Divider(height: 1, color: Colors.grey),
+                            SizedBox(height: 10),
+                            // 정렬 섹션
+                            Text(
+                              'Sort Options',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            SizedBox(height: 10),
+
+                            // 정렬 옵션 리스트
+                            _buildSortTile(
+                              context,
+                              viewModel,
+                              'Number (Ascending)',
+                              SortOption.numberAscending,
+                              Icons.arrow_upward,
+                            ),
+                            Divider(height: 1, color: Colors.grey),
+                            _buildSortTile(
+                              context,
+                              viewModel,
+                              'Number (Descending)',
+                              SortOption.numberDescending,
+                              Icons.arrow_downward,
+                            ),
+                            Divider(height: 1, color: Colors.grey),
+                            _buildSortTile(
+                              context,
+                              viewModel,
+                              'Name (A to Z)',
+                              SortOption.nameAscending,
+                              Icons.sort_by_alpha,
+                            ),
+                            Divider(height: 1, color: Colors.grey),
+                            _buildSortTile(
+                              context,
+                              viewModel,
+                              'Name (Z to A)',
+                              SortOption.nameDescending,
+                              Icons.sort_by_alpha,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -302,6 +470,32 @@ class PokemonListScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildSortTile(
+    BuildContext context,
+    PokemonListViewModel viewModel,
+    String title,
+    SortOption option,
+    IconData icon,
+  ) {
+    final isSelected = viewModel.sortOption == option;
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? Colors.red : null,
+        ),
+      ),
+      leading: Icon(icon, color: isSelected ? Colors.red : null),
+      trailing: isSelected ? Icon(Icons.check_circle, color: Colors.red) : null,
+      onTap: () {
+        viewModel.updateSortOption(option);
+        // 정렬 후 Drawer 닫기
+        Navigator.pop(context);
+      },
+    );
+  }
 }
 
 class PokemonList extends StatelessWidget {
@@ -380,5 +574,17 @@ class PokemonList extends StatelessWidget {
       separatorBuilder:
           (context, index) => Divider(height: 1, color: Colors.grey),
     );
+  }
+}
+
+// 첫글자를 대문자로 변환하는 클래스 - extension 충돌 방지용
+class StringCapitalize {
+  final String text;
+
+  StringCapitalize(this.text);
+
+  String capitalize() {
+    if (text.isEmpty) return text;
+    return '${text[0].toUpperCase()}${text.substring(1)}';
   }
 }

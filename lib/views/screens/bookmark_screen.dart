@@ -25,9 +25,15 @@ class BookmarkScreen extends StatelessWidget {
           },
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: Icon(Icons.sort_rounded, size: 40),
+          InkWell(
+            onTap: () {
+              // 정렬 옵션 다이얼로그 표시
+              _showSortOptionsDialog(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Icon(Icons.sort_rounded, size: 40),
+            ),
           ),
         ],
       ),
@@ -193,6 +199,128 @@ class BookmarkScreen extends StatelessWidget {
             ),
           ),
         );
+      },
+    );
+  }
+
+  // 정렬 옵션 다이얼로그
+  void _showSortOptionsDialog(BuildContext context) {
+    final bookmarkViewModel = Provider.of<BookmarkViewModel>(
+      context,
+      listen: false,
+    );
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            titlePadding: EdgeInsets.zero,
+            title: Container(
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Spacer(),
+                  Image.asset('assets/sort_title.png', fit: BoxFit.contain),
+
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSortOptionTile(
+                  context,
+                  bookmarkViewModel,
+                  'Newest First',
+                  BookmarkSortOption.dateAddedNewest,
+                  Icons.access_time,
+                ),
+                Divider(height: 1, color: Colors.grey),
+                _buildSortOptionTile(
+                  context,
+                  bookmarkViewModel,
+                  'Oldest First',
+                  BookmarkSortOption.dateAddedOldest,
+                  Icons.history,
+                ),
+                Divider(height: 1, color: Colors.grey),
+                _buildSortOptionTile(
+                  context,
+                  bookmarkViewModel,
+                  'Number (Ascending)',
+                  BookmarkSortOption.numberAscending,
+                  Icons.arrow_upward,
+                ),
+                Divider(height: 1, color: Colors.grey),
+                _buildSortOptionTile(
+                  context,
+                  bookmarkViewModel,
+                  'Number (Descending)',
+                  BookmarkSortOption.numberDescending,
+                  Icons.arrow_downward,
+                ),
+                Divider(height: 1, color: Colors.grey),
+                _buildSortOptionTile(
+                  context,
+                  bookmarkViewModel,
+                  'Name (A to Z)',
+                  BookmarkSortOption.nameAscending,
+                  Icons.sort_by_alpha,
+                ),
+                Divider(height: 1, color: Colors.grey),
+                _buildSortOptionTile(
+                  context,
+                  bookmarkViewModel,
+                  'Name (Z to A)',
+                  BookmarkSortOption.nameDescending,
+                  Icons.sort_by_alpha,
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  // 정렬 옵션 타일
+  Widget _buildSortOptionTile(
+    BuildContext context,
+    BookmarkViewModel viewModel,
+    String title,
+    BookmarkSortOption option,
+    IconData icon,
+  ) {
+    final isSelected = viewModel.sortOption == option;
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? Colors.red : null,
+        ),
+      ),
+      leading: Icon(icon, color: isSelected ? Colors.red : null),
+      trailing: isSelected ? Icon(Icons.check_circle, color: Colors.red) : null,
+      onTap: () {
+        viewModel.updateSortOption(option);
+        // 정렬 옵션 선택 후 다이얼로그 닫기
+        Navigator.pop(context);
       },
     );
   }
