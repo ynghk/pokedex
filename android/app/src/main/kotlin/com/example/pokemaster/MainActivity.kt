@@ -1,4 +1,4 @@
-package poke_master
+package com.example.pokemaster
 
 import io.flutter.embedding.android.FlutterActivity
 
