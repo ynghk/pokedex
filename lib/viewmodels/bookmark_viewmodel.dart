@@ -8,12 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // 정렬 방식 열거형
 enum BookmarkSortOption {
+  dateAddedNewest, // 추가 시간 내림차순(최신순)
+  dateAddedOldest, // 추가 시간 오름차순(오래된순)
   numberAscending, // 번호 오름차순 (기본값)
   numberDescending, // 번호 내림차순
   nameAscending, // 이름 오름차순
   nameDescending, // 이름 내림차순
-  dateAddedNewest, // 추가 시간 내림차순(최신순)
-  dateAddedOldest, // 추가 시간 오름차순(오래된순)
 }
 
 // 북마크된 포켓몬 아이템 클래스

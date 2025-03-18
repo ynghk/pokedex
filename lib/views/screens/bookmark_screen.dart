@@ -248,7 +248,7 @@ class BookmarkScreen extends StatelessWidget {
                 _buildSortOptionTile(
                   context,
                   bookmarkViewModel,
-                  'Newest First',
+                  'First Added',
                   BookmarkSortOption.dateAddedNewest,
                   Icons.access_time,
                 ),
@@ -256,7 +256,7 @@ class BookmarkScreen extends StatelessWidget {
                 _buildSortOptionTile(
                   context,
                   bookmarkViewModel,
-                  'Oldest First',
+                  'Last Added',
                   BookmarkSortOption.dateAddedOldest,
                   Icons.history,
                 ),
