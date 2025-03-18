@@ -96,9 +96,12 @@ class PokemonListScreen extends StatelessWidget {
                           padding: EdgeInsets.zero,
                           children: [
                             InkWell(
-                              onTap:
-                                  () =>
-                                      _navigateToBookmarks(context, isDarkMode),
+                              onTap: () {
+                                // 먼저 Drawer 닫기
+                                Navigator.pop(context);
+                                // 그 다음 북마크 화면으로 이동
+                                _navigateToBookmarks(context, isDarkMode);
+                              },
                               child: ListTile(
                                 leading: Image.asset(
                                   'assets/bookmark_pokeball.png',
@@ -282,8 +285,12 @@ class PokemonListScreen extends StatelessWidget {
           ),
         ],
       ),
-      onTap:
-          () => viewModel.selectRegion(region, viewModel.scrollToTop, context),
+      onTap: () {
+        // 먼저 Drawer 닫기
+        Navigator.pop(context);
+        // 그 다음 지역 선택 로직 실행
+        viewModel.selectRegion(region, viewModel.scrollToTop, context);
+      },
     );
   }
 

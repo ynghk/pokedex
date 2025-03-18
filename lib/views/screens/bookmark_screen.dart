@@ -14,8 +14,16 @@ class BookmarkScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
+        centerTitle: true,
         title: Image.asset('assets/bookmark.png', width: 170),
         iconTheme: IconThemeData(color: Colors.white, size: 30),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left_rounded, size: 30),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
