@@ -17,7 +17,6 @@ class PokemonListViewModel with ChangeNotifier {
   final PokemonRepository _repository;
   List<PokedexEntry> _allPokemons = [];
   List<PokedexEntry> _pokemons = [];
-  List<String> selectedTypes = [];
   String _searchQuery = '';
   String _selectedRegion = 'Kanto';
   String _selectedLanguage = 'English';

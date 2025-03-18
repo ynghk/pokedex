@@ -230,7 +230,7 @@ class PokemonListScreen extends StatelessWidget {
                             SizedBox(height: 10),
 
                             // 선택된 필터 초기화 버튼
-                            if (viewModel.selectedTypes.isNotEmpty)
+                            if (viewModel.selectedTypeChip.isNotEmpty)
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton.icon(
@@ -254,7 +254,8 @@ class PokemonListScreen extends StatelessWidget {
                               runSpacing: 5.0,
                               children:
                                   viewModel.availableTypes.map((type) {
-                                    final isSelected = viewModel.selectedTypes
+                                    final isSelected = viewModel
+                                        .selectedTypeChip
                                         .contains(type);
                                     final color = viewModel.getTypeColor(type);
                                     final isDarkMode =
