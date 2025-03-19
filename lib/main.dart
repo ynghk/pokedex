@@ -5,6 +5,7 @@ import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:poke_master/views/screens/pokemon_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -51,10 +52,32 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isDarkMode = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadTheme(); // 앱 시작 시 테마 불러오기
+  }
+
+  // 테마 토글 메서드
   void _toggleTheme(bool isDark) {
     setState(() {
       _isDarkMode = isDark;
+      _saveTheme(_isDarkMode); // 테마 변경 시 저장 호출
     });
+  }
+
+  // SharedPreferences에서 테마 상태 불러오기
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isDarkMode = prefs.getBool('isDarkMode') ?? false; // 기본값은 false
+    });
+  }
+
+  // SharedPreferences에 테마 상태 저장하기
+  Future<void> _saveTheme(bool isDarkMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', isDarkMode);
   }
 
   @override
