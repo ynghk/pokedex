@@ -118,13 +118,16 @@ class EvolutionStageWidget extends StatelessWidget {
                         ),
 
                         // 진화 조건 (첫 번째가 아니면)
-                        if (stage != base)
+                        if (stage != base &&
+                            (stage.item != null || stage.minLevel != null))
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10.0,
                             ),
                             child: Text(
-                              '(${stage.item ?? 'Lv.${stage.minLevel}'})',
+                              stage.item != null
+                                  ? '(${stage.item})'
+                                  : '(Lv.${stage.minLevel})',
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
                               maxLines: 1,
