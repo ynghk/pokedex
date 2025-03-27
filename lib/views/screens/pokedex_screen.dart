@@ -214,8 +214,21 @@ class PokedexScreen extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 30.0),
                           child: InkWell(
                             splashColor: Colors.transparent,
-                            onTap:
-                                () => bookmarkViewModel.toggleBookmark(pokedex),
+                            onTap: () {
+                              final isCurrentlyBookmarked = bookmarkViewModel
+                                  .isBookmarked(pokedex);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isCurrentlyBookmarked
+                                        ? 'Bookmared Removed!'
+                                        : 'Bookmared!',
+                                  ),
+                                  duration: Duration(milliseconds: 500),
+                                ),
+                              );
+                              bookmarkViewModel.toggleBookmark(pokedex);
+                            },
                             child: Padding(
                               padding: const EdgeInsets.only(right: 12.0),
                               child: Image.asset(
