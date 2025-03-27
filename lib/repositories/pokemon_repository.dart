@@ -34,7 +34,7 @@ class PokemonRepository {
         return pokemons.where((p) => p.id > 809 && p.id <= 898).toList();
       case 'Paldea':
         return pokemons
-            .where((p) => p.id > 898 && p.id <= 1003)
+            .where((p) => p.id > 906 && p.id <= 1003)
             .toList(); // 1010 아님
       case 'Hisui':
         return pokemons.where((p) => _isHisuiVariant(p)).toList();
@@ -44,7 +44,7 @@ class PokemonRepository {
   }
 
   bool _isHisuiVariant(PokedexEntry p) {
-    const hisuiIds = [899, 900, 901, 902, 903, 904];
+    const hisuiIds = [899, 900, 901, 902, 903, 904, 905];
     return hisuiIds.contains(p.id);
   }
 
