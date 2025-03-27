@@ -14,7 +14,17 @@ void main() async {
   final repository = PokemonRepository();
   final viewModel = PokemonListViewModel(repository);
   await viewModel.loadInitialPokemons();
-  await initialization(viewModel);
+
+  // SharedPreferences에서 다크 모드 상태 가져와 초기화
+  final prefs = await SharedPreferences.getInstance();
+  final isDarkMode =
+      prefs.getBool('isDarkMode') ??
+      (WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark);
+  viewModel.initDarkMode(isDarkMode); // 앱 시작 시 다크 모드 초기화
+
+  await Future.delayed(Duration(seconds: 2)); // 최소 딜레이 추가
+  FlutterNativeSplash.remove();
 
   runApp(
     MultiProvider(
@@ -24,26 +34,22 @@ void main() async {
           create: (_) => BookmarkViewModel(repository: repository),
         ),
         ChangeNotifierProvider<PokemonListViewModel>(
-          create: (_) => PokemonListViewModel(repository),
-        ),
-        ChangeNotifierProvider<PokemonListViewModel>(
           create: (_) => viewModel, // 미리 생성된 viewModel 사용
         ),
       ],
-      child: MyApp(repository: repository),
+      child: MyApp(repository: repository, initialDarkMode: isDarkMode),
     ),
   );
 }
 
-Future<void> initialization(PokemonListViewModel viewModel) async {
-  await Future.delayed(Duration(seconds: 2)); // 최소 딜레이 추가
-  FlutterNativeSplash.remove();
-}
-
 class MyApp extends StatefulWidget {
   final PokemonRepository repository;
-
-  const MyApp({super.key, required this.repository});
+  final bool initialDarkMode;
+  const MyApp({
+    super.key,
+    required this.repository,
+    required this.initialDarkMode,
+  });
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -70,7 +76,10 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isDarkMode = prefs.getBool('isDarkMode') ?? false;
+      _isDarkMode =
+          prefs.getBool('isDarkMode') ??
+          (WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+              Brightness.dark);
     });
   }
 
@@ -85,7 +94,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Poke Master',
-      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Provider<PokemonRepository>.value(
         value: widget.repository,
         child: PokemonListScreen(_isDarkMode, onThemeChanged: _toggleTheme),
