@@ -198,33 +198,41 @@ class PokemonListScreen extends StatelessWidget {
                         padding: EdgeInsets.all(16),
                         children: [
                           // 타입 필터 섹션
-                          Text(
-                            'Filter by Type',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'Filter by Type',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Spacer(),
+                              // 선택된 필터 초기화 버튼
+                              if (viewModel.selectedTypeChip.isNotEmpty)
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    icon: Icon(
+                                      Icons.clear_all,
+                                      color: Colors.red,
+                                    ),
+                                    label: Text(
+                                      'Clear Filters',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                    onPressed: () {
+                                      viewModel.clearTypeFilters();
+                                    },
+                                  ),
+                                ),
+                            ],
                           ),
                           SizedBox(height: 10),
 
-                          // 선택된 필터 초기화 버튼
-                          if (viewModel.selectedTypeChip.isNotEmpty)
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton.icon(
-                                icon: Icon(Icons.clear_all, color: Colors.red),
-                                label: Text(
-                                  'Clear Filters',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                                onPressed: () {
-                                  viewModel.clearTypeFilters();
-                                },
-                              ),
-                            ),
-
                           // 타입 필터 칩 그리드
                           Wrap(
+                            alignment: WrapAlignment.center,
                             spacing: 5.0,
                             runSpacing: 5.0,
                             children:
@@ -235,7 +243,7 @@ class PokemonListScreen extends StatelessWidget {
                                   final isDarkMode =
                                       Theme.of(context).brightness ==
                                       Brightness.dark;
-                                  return FilterChip(
+                                  return ChoiceChip(
                                     label: Text(
                                       StringCapitalize(type).capitalize(),
                                       style: TextStyle(
@@ -248,16 +256,13 @@ class PokemonListScreen extends StatelessWidget {
                                                 : Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
+                                      overflow: TextOverflow.visible,
+                                      maxLines: 1,
                                     ),
                                     backgroundColor: color.withAlpha(70),
                                     selectedColor: color,
                                     selected: isSelected,
-                                    checkmarkColor:
-                                        isSelected
-                                            ? (color.computeLuminance() > 0.5
-                                                ? Colors.black
-                                                : Colors.white)
-                                            : Colors.white,
+                                    showCheckmark: false,
                                     shape: RoundedRectangleBorder(
                                       side: BorderSide(
                                         color:
