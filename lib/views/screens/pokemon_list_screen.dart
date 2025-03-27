@@ -16,26 +16,7 @@ class PokemonListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    create:
-    (_) {
-      final viewModel = Provider.of<PokemonListViewModel>(
-        context,
-        listen: false,
-      );
-      viewModel.initDarkMode(isDarkMode); // 다크 모드만 초기화
-      return viewModel;
-    };
-    final repository = Provider.of<PokemonRepository>(context, listen: false);
-    return ChangeNotifierProvider(
-      create: (_) {
-        final viewModel = PokemonListViewModel(repository);
-        viewModel
-            .loadInitialPokemons(); // 초기 로딩 여기서 시작 (이 안에서 preloadTypeCache 호출됨)
-        viewModel.initDarkMode(isDarkMode); // 다크 모드 초기화
-        // 타입 캐시 초기화 코드 제거
-        return viewModel;
-      },
-      child: Consumer<PokemonListViewModel>(
+      return Consumer<PokemonListViewModel>(
         builder: (context, viewModel, child) {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -471,7 +452,6 @@ class PokemonListScreen extends StatelessWidget {
             ),
           );
         },
-      ),
     );
   }
 

@@ -123,17 +123,14 @@ class EvolutionStageWidget extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10.0,
                             ),
-                            child: SizedBox(
-                              width: 60,
-                              child: Text(
-                                '(${stage.item ?? 'Lv.${stage.minLevel ?? "?"}'})',
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                style: viewModel.getTextStyle(
-                                  context,
-                                  fontSize: 10,
-                                ),
+                            child: Text(
+                              '(${stage.item ?? 'Lv.${stage.minLevel}'})',
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              style: viewModel.getTextStyle(
+                                context,
+                                fontSize: 10,
                               ),
                             ),
                           ),

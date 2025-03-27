@@ -15,7 +15,7 @@ enum SortOption {
 
 class PokemonListViewModel with ChangeNotifier {
   final PokemonRepository _repository;
-  List<PokedexEntry> _allPokemons = [];
+  final List<PokedexEntry> _allPokemons = [];
   List<PokedexEntry> _pokemons = [];
   String _searchQuery = '';
   String _selectedRegion = 'Kanto';
@@ -51,16 +51,15 @@ class PokemonListViewModel with ChangeNotifier {
   SortOption _sortOption = SortOption.numberAscending; // 기본 정렬: 번호 오름차순
 
   final Map<int, List<String>> typeCache = {};
+
+  // 지역별 캐시
+  final Map<String, List<PokedexEntry>> _regionCache = {};
+
   // 생성자 변경
   PokemonListViewModel(this._repository) : _selectedRegion = '' {
     // 검색어 변경 리스너 추가
     _textController.addListener(_onSearchChanged);
   }
-
-  // 타입 및 정렬 관련 getter
-  List<String> get availableTypes => _availableTypes;
-  Set<String> get selectedTypeChip => _selectedTypes;
-  SortOption get sortOption => _sortOption;
 
   // 검색어 변경 감지 메서드
   void _onSearchChanged() {
@@ -70,6 +69,7 @@ class PokemonListViewModel with ChangeNotifier {
   // 검색어 업데이트 메서드
   void updateSearchQuery(String query) {
     _searchQuery = query.toLowerCase();
+    print('Search query: $_searchQuery, All pokemons: ${_allPokemons.length}');
     notifyListeners();
   }
 
@@ -168,14 +168,21 @@ class PokemonListViewModel with ChangeNotifier {
   String get selectedRegion => _selectedRegion;
   String get selectedLanguage => _selectedLanguage;
   bool get isDarkMode => _isDarkMode;
+  // 타입 및 정렬 관련 getter
+  List<String> get availableTypes => _availableTypes;
+  Set<String> get selectedTypeChip => _selectedTypes;
+  SortOption get sortOption => _sortOption;
 
   // 필터링된 포켓몬 리스트
   List<PokedexEntry> get filteredPokemons {
     // 검색어가 있으면 전체 포켓몬에서 검색 (지역 제한 없음)
+    List<PokedexEntry> allPokemons =
+        _regionCache.values.expand((pokemons) => pokemons).toSet().toList();
+
     List<PokedexEntry> filtered =
         _searchQuery.isEmpty
             ? List.from(_pokemons) // 검색어 없을 때는 현재 지역 포켓몬만
-            : _allPokemons // 검색어 있을 때는 모든 지역 포켓몬에서 검색
+            : allPokemons // 검색어 있을 때는 모든 지역 포켓몬에서 검색
                 .where(
                   (pokemon) =>
                       pokemon.name.toLowerCase().contains(_searchQuery) ||
@@ -275,21 +282,30 @@ class PokemonListViewModel with ChangeNotifier {
     error = null;
     notifyListeners();
     try {
-      _allPokemons = await _repository.getPokemonsByRegion('Kanto');
+      final kantoPokemons = await _repository.getPokemonsByRegion('Kanto');
+      print('Raw Kanto data from API: ${kantoPokemons.length} pokemons');
+      _pokemons = kantoPokemons;
+      _regionCache['Kanto'] = _pokemons;
       _selectedRegion = 'Kanto';
-      _pokemons =
-          _allPokemons
-              .where((p) => _getRegionForPokemon(p.id) == _selectedRegion)
-              .toList();
-      print('Initial load: ${_pokemons.length} pokemons for $_selectedRegion');
-      print('Total loaded: ${_allPokemons.length}');
-      if (_allPokemons.length < 1025) {
-        print('Warning: Not all pokemons loaded, expected 1025');
+      print('Initial load completed: ${_pokemons.length} pokemons for Kanto');
+
+      final regions = [
+        'Johto',
+        'Hoenn',
+        'Sinnoh',
+        'Unova',
+        'Kalos',
+        'Alola',
+        'Galar',
+        'Paldea',
+        'Hisui',
+      ];
+      for (var region in regions) {
+        await _preloadRegion(region);
       }
     } catch (e) {
       error = e.toString();
       print('Error loading initial pokemons: $e');
-      print('Stacktrace: ${StackTrace.current}');
     } finally {
       isLoading = false;
       notifyListeners();
@@ -297,24 +313,37 @@ class PokemonListViewModel with ChangeNotifier {
     }
   }
 
-  // 현재 지역 포켓몬만 새로고침
+  Future<void> _preloadRegion(String region) async {
+    if (_regionCache.containsKey(region)) return;
+    try {
+      final pokemons = await _repository.getPokemonsByRegion(region);
+      _regionCache[region] = pokemons;
+      print('Preloaded $region: ${pokemons.length} pokemons');
+    } catch (e) {
+      print('Error preloading $region: $e');
+    }
+  }
+
   Future<void> loadPokemons() async {
+    if (_regionCache.containsKey(_selectedRegion)) {
+      _pokemons = _regionCache[_selectedRegion]!;
+      print(
+        'Loaded from cache: ${_pokemons.length} pokemons for $_selectedRegion',
+      );
+      notifyListeners();
+      return;
+    }
+
     isLoading = true;
     error = null;
     notifyListeners();
     try {
-      // 전체 포켓몬 데이터 다시 로드
-      _allPokemons = await _repository.getPokemonsByRegion(_selectedRegion);
-      // 현재 선택된 지역에 맞는 포켓몬만 필터링
-      _pokemons =
-          _allPokemons
-              .where((p) => _getRegionForPokemon(p.id) == _selectedRegion)
-              .toList();
+      _pokemons = await _repository.getPokemonsByRegion(_selectedRegion);
+      _regionCache[_selectedRegion] = _pokemons;
       print('Refreshed ${_pokemons.length} pokemons for $_selectedRegion');
     } catch (e) {
       error = e.toString();
       print('Error refreshing pokemons: $e');
-      print('Stacktrace: ${StackTrace.current}');
     } finally {
       isLoading = false;
       notifyListeners();
@@ -329,24 +358,15 @@ class PokemonListViewModel with ChangeNotifier {
     BuildContext context,
   ) async {
     _selectedRegion = region;
-    isLoading = true;
-    // 지역 변경 시 타입 필터 초기화
     _selectedTypes.clear();
-    notifyListeners();
-    try {
-      if (_allPokemons.length < 1025 && region != 'Kanto') {
-        _allPokemons = await _repository.getPokemonsByRegion(region); // 전체 로드
-      }
-      _pokemons =
-          _allPokemons
-              .where((p) => _getRegionForPokemon(p.id) == region)
-              .toList();
-      print('Selected $region - Pokemons: ${_pokemons.length}');
-    } catch (e) {
-      error = e.toString();
-    } finally {
-      isLoading = false;
+    if (_regionCache.containsKey(region)) {
+      _pokemons = _regionCache[region]!;
+      print('Selected from cache: ${_pokemons.length} pokemons for $region');
       notifyListeners();
+      scrollToTop();
+      clearSearch();
+    } else {
+      await loadPokemons();
       scrollToTop();
       clearSearch();
     }
@@ -367,13 +387,12 @@ class PokemonListViewModel with ChangeNotifier {
   }
 
   Future<List<String>> getPokemonTypes(int pokemonId) async {
-    // 캐시에 있으면 캐시에서 반환
     if (typeCache.containsKey(pokemonId)) {
       return typeCache[pokemonId]!;
     }
 
     final detail = await _repository.getPokemonDetail(pokemonId);
-    typeCache[pokemonId] = detail.types; // 캐시에 저장
+    typeCache[pokemonId] = detail.types;
     return detail.types;
   }
 
@@ -382,11 +401,11 @@ class PokemonListViewModel with ChangeNotifier {
       future: getPokemonTypes(pokemonId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return SizedBox(width: 60, height: 20); // 로딩 중 빈 공간
+          return SizedBox(width: 60, height: 20);
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return SizedBox(width: 60, height: 20); // 데이터 없을 때 빈 공간
+          return SizedBox(width: 60, height: 20);
         }
 
         // 타입 칩 생성

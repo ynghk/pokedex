@@ -15,8 +15,8 @@ void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     final repository = PokemonRepository();
-
-    await tester.pumpWidget(MyApp(repository: repository)); 
+    const isDarkMode = false; // Define the variable
+    await tester.pumpWidget(MyApp(repository: repository, initialDarkMode: isDarkMode)); 
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
