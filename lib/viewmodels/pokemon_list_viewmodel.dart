@@ -372,20 +372,6 @@ class PokemonListViewModel with ChangeNotifier {
     }
   }
 
-  String _getRegionForPokemon(int id) {
-    if (id <= 151) return 'Kanto';
-    if (id <= 251) return 'Johto';
-    if (id <= 386) return 'Hoenn';
-    if (id <= 493) return 'Sinnoh';
-    if (id <= 649) return 'Unova';
-    if (id <= 721) return 'Kalos';
-    if (id <= 809) return 'Alola';
-    if (id <= 898) return 'Galar';
-    if (id <= 905) return 'Hisui';
-    if (id <= 1010) return 'Paldea';
-    return 'Paldea';
-  }
-
   Future<List<String>> getPokemonTypes(int pokemonId) async {
     if (typeCache.containsKey(pokemonId)) {
       return typeCache[pokemonId]!;
