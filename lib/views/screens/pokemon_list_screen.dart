@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:poke_master/views/screens/bookmark_screen.dart';
 import 'package:provider/provider.dart';
