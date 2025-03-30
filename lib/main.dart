@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
+import 'package:poke_master/viewmodels/login_viewmodel.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:poke_master/views/screens/auth_screen.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +41,7 @@ void main() async {
         ChangeNotifierProvider<PokemonListViewModel>(
           create: (_) => viewModel, // 미리 생성된 viewModel 사용
         ),
+        ChangeNotifierProvider<LoginViewModel>(create: (_) => LoginViewModel()),
       ],
       child: MyApp(repository: repository, initialDarkMode: isDarkMode),
     ),
@@ -65,6 +67,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _isDarkMode = widget.initialDarkMode;
     _loadTheme(); // 앱 시작 시 테마 불러오기
   }
 
@@ -80,10 +83,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isDarkMode =
-          prefs.getBool('isDarkMode') ??
-          (WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-              Brightness.dark);
+      _isDarkMode = prefs.getBool('isDarkMode') ?? widget.initialDarkMode;
     });
   }
 
