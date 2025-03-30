@@ -1,8 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
-import 'package:poke_master/views/screens/login_screen.dart';
+import 'package:poke_master/views/screens/auth_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  //Firebase 초기화
+  await Firebase.initializeApp();
 
   final repository = PokemonRepository();
   final viewModel = PokemonListViewModel(repository);
@@ -114,7 +118,11 @@ class _MyAppState extends State<MyApp> {
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Provider<PokemonRepository>.value(
         value: widget.repository,
-        child: LoginScreen(),
+        child: AuthScreen(
+          isDarkMode: _isDarkMode,
+          onThemeChanged: _toggleTheme,
+          repository: widget.repository,
+        ),
       ),
     );
   }
