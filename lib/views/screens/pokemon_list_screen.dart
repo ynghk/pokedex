@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:poke_master/views/screens/bookmark_screen.dart';
