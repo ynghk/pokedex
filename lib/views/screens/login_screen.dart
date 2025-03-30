@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:poke_master/viewmodels/login_viewmodel.dart';
 
@@ -39,6 +41,7 @@ class LoginScreen extends StatelessWidget {
                         child: TextField(
                           style: TextStyle(color: Colors.black),
                           controller: viewModel.emailController,
+                          textAlignVertical: TextAlignVertical.center,
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: 'User Id',
@@ -73,6 +76,7 @@ class LoginScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 20.0),
                         child: TextField(
                           style: TextStyle(color: Colors.black),
+                          textAlignVertical: TextAlignVertical.center,
                           controller: viewModel.passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
@@ -99,40 +103,51 @@ class LoginScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 80.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        viewModel.isLoggingIn
-                            ? null
-                            : () async {
-                              await viewModel.signUserIn(
-                                viewModel.emailController.text,
-                                viewModel.passwordController.text,
-                              );
-                              if (viewModel.errorMessage == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Welcome trainer!'),
-                                    duration: Duration(seconds: 2),
-                                  ),
+                    child: InkWell(
+                      onTap:
+                          viewModel.isLoggingIn
+                              ? null
+                              : () async {
+                                await viewModel.signUserIn(
+                                  viewModel.emailController.text,
+                                  viewModel.passwordController.text,
                                 );
-                              }
-                            };
-                      },
+                                if (viewModel.errorMessage == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Welcome trainer!'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              },
+                      splashColor: Colors.grey,
+                      borderRadius: BorderRadius.circular(8),
                       child: Container(
                         padding: EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Color(0xFF702fc8),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Center(
-                          child: Text(
-                            'Sign In',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                        child: SizedBox(
+                          width: 150,
+                          height: 30,
+                          child:
+                              viewModel.isLoggingIn
+                                  ? Image.asset(
+                                    'assets/pokeball_spin.gif',
+                                    fit: BoxFit.contain,
+                                  )
+                                  : Center(
+                                    child: Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                         ),
                       ),
                     ),
