@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:poke_master/views/screens/bookmark_screen.dart';
@@ -7,9 +9,9 @@ class PokemonListScreen extends StatelessWidget {
   final bool isDarkMode;
   final Function(bool) onThemeChanged;
 
-  const PokemonListScreen(
-    this.isDarkMode, {
+  const PokemonListScreen({
     super.key,
+    required this.isDarkMode,
     required this.onThemeChanged,
   });
 
@@ -144,7 +146,10 @@ class PokemonListScreen extends StatelessWidget {
                     ),
                     ListTile(
                       trailing: Icon(Icons.settings, size: 20),
-                      title: Text('Settings'),
+                      title: Text(
+                        'Settings',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       tileColor: viewModel.getSettingsTileColor(context),
                       onTap:
                           () => viewModel.showSettingsDialog(
@@ -152,6 +157,18 @@ class PokemonListScreen extends StatelessWidget {
                             isDarkMode,
                             onThemeChanged,
                           ),
+                    ),
+                    Divider(height: 1, color: Colors.grey),
+                    ListTile(
+                      trailing: Icon(Icons.logout_rounded, size: 20),
+                      title: Text(
+                        'Log Out',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      tileColor: viewModel.getSettingsTileColor(context),
+                      onTap: () {
+                        FirebaseAuth.instance.signOut();
+                      },
                     ),
                   ],
                 ),
@@ -207,6 +224,7 @@ class PokemonListScreen extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+
                               Spacer(),
                               // 선택된 필터 초기화 버튼
                               if (viewModel.selectedTypeChip.isNotEmpty)
@@ -228,8 +246,8 @@ class PokemonListScreen extends StatelessWidget {
                                 ),
                             ],
                           ),
-                          SizedBox(height: 10),
 
+                          SizedBox(height: 10),
                           // 타입 필터 칩 그리드
                           Wrap(
                             alignment: WrapAlignment.center,
