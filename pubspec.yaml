@@ -225,6 +225,8 @@ flutter:
   - assets/filter_sort_title.png
   - assets/sort_title.png
   - assets/splash_screen.png
+  - assets/gotta_catch_em_all.png
+  - assets/pokemaster_login_title.png
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

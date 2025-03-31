@@ -15,7 +15,7 @@ class BookmarkScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Color(0xFF702fc8),
         centerTitle: true,
-        title: Image.asset('assets/bookmark.png', width: 170),
+        title: Image.asset('assets/bookmark.png', width: 160),
         iconTheme: IconThemeData(color: Colors.white, size: 30),
         automaticallyImplyLeading: false,
         leading: IconButton(
