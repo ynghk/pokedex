@@ -35,7 +35,7 @@ class PokemonListScreen extends StatelessWidget {
                     ),
               ),
               title: Center(
-                child: Image.asset('assets/pokemaster_title.png', width: 220),
+                child: Image.asset('assets/pokemaster_title.png', width: 200),
               ),
               actions: [
                 Builder(
@@ -73,7 +73,7 @@ class PokemonListScreen extends StatelessWidget {
                             child: Center(
                               child: Image.asset(
                                 'assets/poke_menu_title.png',
-                                fit: BoxFit.fill,
+                                width: 200,
                               ),
                             ),
                           ),
@@ -189,7 +189,7 @@ class PokemonListScreen extends StatelessWidget {
                             child: Center(
                               child: Image.asset(
                                 'assets/filter_sort_title.png',
-                                fit: BoxFit.fill,
+                                width: 220,
                               ),
                             ),
                           ),
