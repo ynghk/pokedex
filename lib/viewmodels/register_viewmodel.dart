@@ -56,4 +56,9 @@ class RegisterViewModel extends ChangeNotifier {
     confirmPasswordController.dispose();
     super.dispose();
   }
+
+  // 키보드 내리기
+  VoidCallback unfocusKeyboard(BuildContext context) {
+  return () => FocusScope.of(context).unfocus();
+}
 }
