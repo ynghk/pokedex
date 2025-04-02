@@ -9,14 +9,15 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LoginViewModel>(
-      builder: (context, viewModel, child) {
-        return GestureDetector(
-          onTap: viewModel.unfocusKeyboard(context),
-          child: Scaffold(
-            body: SafeArea(
-              child: Center(
-                child: Column(
+    final viewModel = Provider.of<LoginViewModel>(context, listen: false);
+    return GestureDetector(
+      onTap: viewModel.unfocusKeyboard(context),
+      child: Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Consumer<LoginViewModel>(
+              builder: (context, viewModel, child) {
+                return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
@@ -120,12 +121,12 @@ class LoginScreen extends StatelessWidget {
                       ],
                     ),
                   ],
-                ),
-              ),
+                );
+              },
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

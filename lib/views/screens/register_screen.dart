@@ -7,15 +7,17 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RegisterViewModel>(
-      builder: (context, viewModel, child) {
-        return GestureDetector(
-          onTap: viewModel.unfocusKeyboard(context),
-          child: Scaffold(
-            body: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
+    final viewModel = Provider.of<RegisterViewModel>(context, listen: false);
+    return GestureDetector(
+      onTap: viewModel.unfocusKeyboard(context),
+
+      child: Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Consumer<RegisterViewModel>(
+                builder: (context, viewModel, child) {
+                  return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
@@ -75,13 +77,13 @@ class RegisterScreen extends StatelessWidget {
                         ],
                       ),
                     ],
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
