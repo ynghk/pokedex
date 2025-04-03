@@ -9,7 +9,6 @@ class LoginViewModel extends ChangeNotifier {
 
   bool get isLoggingIn => _isLoggingIn;
   String? get errorMessage => _errorMessage;
-  final textController = TextEditingController();
 
   Future<void> signUserIn(String email, String password) async {
     _isLoggingIn = true;

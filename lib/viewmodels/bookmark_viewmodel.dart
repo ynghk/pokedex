@@ -2,8 +2,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
-import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/views/screens/pokedex_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // 정렬 방식 열거형
@@ -46,9 +47,16 @@ class BookmarkViewModel with ChangeNotifier {
   final PokemonRepository repository;
   final List<BookmarkedItem> _bookmarkedItems = [];
   bool _isInitialized = false;
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textController = TextEditingController();
+
+  // 정렬 옵션 getter
+  BookmarkSortOption get sortOption => _sortOption;
+  // Textcontroller getters
+  TextEditingController get textController => _textController;
+  ScrollController get scrollController => _scrollController;
 
   // 검색 관련 변수들 추가
-  final TextEditingController textController = TextEditingController();
   String _searchQuery = '';
 
   // 정렬 관련 변수
@@ -61,11 +69,8 @@ class BookmarkViewModel with ChangeNotifier {
   BookmarkViewModel({required this.repository}) {
     _init();
     // 검색어 변경 리스너 추가
-    textController.addListener(_onSearchChanged);
+    _textController.addListener(_onSearchChanged);
   }
-
-  // 정렬 옵션 getter
-  BookmarkSortOption get sortOption => _sortOption;
 
   // 정렬 옵션 업데이트 메서드
   void updateSortOption(BookmarkSortOption option) {
@@ -75,7 +80,7 @@ class BookmarkViewModel with ChangeNotifier {
 
   // 검색어 변경 감지 메서드
   void _onSearchChanged() {
-    updateSearchQuery(textController.text);
+    updateSearchQuery(_textController.text);
   }
 
   // 검색어 업데이트 메서드
@@ -86,7 +91,7 @@ class BookmarkViewModel with ChangeNotifier {
 
   // 검색 초기화 메서드
   void clearSearch() {
-    textController.clear();
+    _textController.clear();
     _searchQuery = '';
     notifyListeners();
   }
@@ -161,8 +166,9 @@ class BookmarkViewModel with ChangeNotifier {
 
   @override
   void dispose() {
-    textController.removeListener(_onSearchChanged);
-    textController.dispose();
+    _textController.removeListener(_onSearchChanged);
+    _textController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -294,7 +300,7 @@ class BookmarkViewModel with ChangeNotifier {
                       padding: const EdgeInsets.only(right: 3.0),
                       child: Chip(
                         label: Text(
-                          type.capitalize(),
+                          StringCapitalizeExtension(type).capitalize(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -395,5 +401,161 @@ class BookmarkViewModel with ChangeNotifier {
         },
       ),
     );
+  }
+
+  // 스크롤 상단으로 이동 버튼
+  void scrollToTop() {
+    if (_scrollController.hasClients) {
+      // 연결된 뷰가 있는지 확인
+      _scrollController.animateTo(
+        0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void navigateToDetail(BuildContext context, PokedexEntry pokemon) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => Provider<PokemonRepository>.value(
+              value: repository,
+              child: PokedexScreen(pokedex: pokemon, isDarkMode: false),
+            ),
+      ),
+    );
+  }
+}
+
+// 정렬 옵션 다이얼로그
+void showSortOptionsDialog(BuildContext context) {
+  final bookmarkViewModel = Provider.of<BookmarkViewModel>(
+    context,
+    listen: false,
+  );
+
+  showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          titlePadding: EdgeInsets.zero,
+          title: Container(
+            height: 80,
+            decoration: BoxDecoration(
+              color: Color(0xFF702fc8),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Spacer(),
+                Image.asset('assets/sort_title.png', fit: BoxFit.contain),
+
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'First Added',
+                BookmarkSortOption.dateAddedNewest,
+                Icons.access_time,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Lastly Added',
+                BookmarkSortOption.dateAddedOldest,
+                Icons.history,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Number (Ascending)',
+                BookmarkSortOption.numberAscending,
+                Icons.arrow_upward,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Number (Descending)',
+                BookmarkSortOption.numberDescending,
+                Icons.arrow_downward,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Name (A to Z)',
+                BookmarkSortOption.nameAscending,
+                Icons.sort_by_alpha,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Name (Z to A)',
+                BookmarkSortOption.nameDescending,
+                Icons.sort_by_alpha,
+              ),
+            ],
+          ),
+        ),
+  );
+}
+
+// 정렬 옵션 타일
+Widget _buildSortOptionTile(
+  BuildContext context,
+  BookmarkViewModel viewModel,
+  String title,
+  BookmarkSortOption option,
+  IconData icon,
+) {
+  final isSelected = viewModel.sortOption == option;
+  return ListTile(
+    title: Text(
+      title,
+      style: TextStyle(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? Color(0xFF702fc8) : null,
+      ),
+    ),
+    leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
+    trailing:
+        isSelected ? Icon(Icons.check_circle, color: Color(0xFF702fc8)) : null,
+    onTap: () {
+      viewModel.updateSortOption(option);
+      // 정렬 옵션 선택 후 다이얼로그 닫기
+      Navigator.pop(context);
+    },
+  );
+}
+
+// String 확장 메서드가 없을 경우 추가
+extension StringCapitalizeExtension on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

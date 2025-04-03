@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
-import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
-import 'package:poke_master/viewmodels/pokemon_detail_viewmodel.dart';
+import 'package:poke_master/viewmodels/pokedex_viewmodel.dart';
 import 'package:poke_master/viewmodels/shiny_pokemon_viewmodel.dart';
 import 'package:poke_master/views/widgets/evolution_stage_widget.dart';
 import 'package:poke_master/views/widgets/pokemon_image.dart';
@@ -29,7 +28,7 @@ class PokedexScreen extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) {
             // ViewModel의 라이프사이클을 더 명확하게 관리
-            final viewModel = PokemonDetailViewModel(repository, pokedex.id);
+            final viewModel = PokedexViewModel(repository, pokedex.id);
             // 별도의 메서드 호출 대신 즉시 fetchData 호출
             viewModel.fetchData();
             return viewModel;
@@ -37,7 +36,7 @@ class PokedexScreen extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => ShinyPokemonViewmodel()),
       ],
-      child: Consumer2<PokemonDetailViewModel, ShinyPokemonViewmodel>(
+      child: Consumer2<PokedexViewModel, ShinyPokemonViewmodel>(
         builder: (context, detailViewModel, shinyViewModel, child) {
           return Scaffold(
             appBar: AppBar(
@@ -156,7 +155,7 @@ class PokedexScreen extends StatelessWidget {
 
   Widget _buildPokemonDetail(
     BuildContext context,
-    PokemonDetailViewModel detailViewModel,
+    PokedexViewModel detailViewModel,
     ShinyPokemonViewmodel shinyViewModel,
   ) {
     final detail = detailViewModel.pokemonDetail!;

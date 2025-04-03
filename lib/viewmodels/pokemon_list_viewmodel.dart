@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
 import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/views/screens/bookmark_screen.dart';
+import 'package:poke_master/views/screens/login_screen.dart';
 import 'package:poke_master/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -14,6 +17,7 @@ enum SortOption {
 }
 
 class PokemonListViewModel with ChangeNotifier {
+  bool get isLoggedIn => FirebaseAuth.instance.currentUser != null; // 로그인 상태관리 getter
   final PokemonRepository _repository;
   final List<PokedexEntry> _allPokemons = [];
   List<PokedexEntry> _pokemons = [];
@@ -57,7 +61,8 @@ class PokemonListViewModel with ChangeNotifier {
 
   // 생성자 변경
   PokemonListViewModel(this._repository) : _selectedRegion = '' {
-    // 검색어 변경 리스너 추가
+  
+  // 검색어 변경 리스너 추가
     _textController.addListener(_onSearchChanged);
   }
 
@@ -430,7 +435,7 @@ class PokemonListViewModel with ChangeNotifier {
 
   // 포켓몬 타입 이름 가져오기
   String getPokemonType(String type) {
-    return type.capitalize();
+    return StringCapitalize(type).capitalize();
   }
 
   void updateLanguage(String newLanguage) {
@@ -654,5 +659,41 @@ class PokemonListViewModel with ChangeNotifier {
             ),
           ),
     );
+  }
+
+  //로그인/로그아웃 상태관리
+  void checkAuthState() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    notifyListeners();
+  }
+
+  //북마크로 이동
+  void navigateToBookmarks(BuildContext context, bool isDarkMode) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // 로그아웃 상태일 때
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      ).then((_) {
+        if (FirebaseAuth.instance.currentUser != null) {
+          checkAuthState();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookmarkScreen(isDarkMode: isDarkMode),
+            ),
+          ).then((_) => checkAuthState());
+        }
+        checkAuthState();
+      });
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookmarkScreen(isDarkMode: isDarkMode),
+        ),
+      ).then((_) => checkAuthState());
+    }
   }
 }
