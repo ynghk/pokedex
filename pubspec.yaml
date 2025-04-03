@@ -44,6 +44,7 @@ dependencies:
   firebase_auth: ^5.5.2
   firebase_core: ^3.12.1
   sliver_tools: ^0.2.12
+  cloud_firestore: ^5.6.6
 
   
 flutter_native_splash:
