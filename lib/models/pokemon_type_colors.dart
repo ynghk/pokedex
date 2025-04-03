@@ -77,7 +77,7 @@ extension StringCapitalize on String {
   }
 }
 
-Color getAppBarColor(PokemonDetail detail) {
+Color getAppBarColor(PokedexDetail detail) {
   final primaryType = detail.types[0].toLowerCase();
   return pokemonTypeColors[primaryType] ?? Colors.red;
 }

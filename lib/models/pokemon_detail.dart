@@ -1,4 +1,4 @@
-class PokemonDetail {
+class PokedexDetail {
   final int height;
   final int weight;
   final List<String> types; //포켓몬 타입
@@ -6,7 +6,7 @@ class PokemonDetail {
   final List<String> regularAbilities; // 일반 어빌리티
   final List<String> hiddenAbilities; // 히든 어빌리티
 
-  PokemonDetail({
+  PokedexDetail({
     required this.height,
     required this.weight,
     required this.types,
@@ -15,7 +15,7 @@ class PokemonDetail {
     required this.hiddenAbilities,
   });
 
-  factory PokemonDetail.fromJson(Map<String, dynamic> json) {
+  factory PokedexDetail.fromJson(Map<String, dynamic> json) {
     final height = json['height'];
     final weight = json['weight'];
     final typeList =
@@ -43,7 +43,7 @@ class PokemonDetail {
       }
     }
 
-    return PokemonDetail(
+    return PokedexDetail(
       height: height,
       weight: weight,
       types: typeList,

@@ -59,6 +59,7 @@ class LoginScreen extends StatelessWidget {
                                         duration: Duration(seconds: 2),
                                       ),
                                     );
+                                    Navigator.pop(context);
                                   }
                                 },
                         child: Container(

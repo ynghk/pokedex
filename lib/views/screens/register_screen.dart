@@ -29,7 +29,7 @@ class RegisterScreen extends StatelessWidget {
                       SizedBox(height: 40),
                       _buildTextField(
                         controller: viewModel.emailController,
-                        hintText: 'Email',
+                        hintText: 'Example@email.com',
                         viewModel: viewModel,
                       ),
 
@@ -37,7 +37,7 @@ class RegisterScreen extends StatelessWidget {
                       SizedBox(height: 10),
                       _buildTextField(
                         controller: viewModel.passwordController,
-                        hintText: 'Password',
+                        hintText: 'Password(At least 6 characters)',
                         obscureText: true,
                         viewModel: viewModel,
                       ),
