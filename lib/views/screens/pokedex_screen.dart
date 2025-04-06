@@ -220,7 +220,8 @@ class PokedexScreen extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Sign in th use bookmark'),
-                                    duration: Duration(milliseconds: 500),
+                                    duration: Duration(seconds: 1),
+                                    backgroundColor: Colors.red,
                                   ),
                                 );
                               } else {

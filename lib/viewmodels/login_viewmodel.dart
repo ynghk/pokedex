@@ -20,8 +20,28 @@ class LoginViewModel extends ChangeNotifier {
         email: email.trim(),
         password: password.trim(),
       );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-credential':
+          _errorMessage = 'Invalid email or password';
+          break;
+        case 'wrong-password':
+          _errorMessage = 'Invalid Password';
+          break;
+        case 'user-not-found':
+          _errorMessage = 'User not found';
+          break;
+        case 'invalid-email':
+          _errorMessage = 'Invalid email format';
+          break;
+        case 'user-disabled':
+          _errorMessage = 'This account has been disabled';
+          break;
+        default:
+          _errorMessage = 'Login failed. Please try again (Code: ${e.code})';
+      }
     } catch (e) {
-      _errorMessage = 'Login failed: $e';
+      _errorMessage = 'An unexpected error occurred: $e';
     }
 
     _isLoggingIn = false;
@@ -50,6 +70,6 @@ class LoginViewModel extends ChangeNotifier {
 
   // 키보드 내리기
   VoidCallback unfocusKeyboard(BuildContext context) {
-  return () => FocusScope.of(context).unfocus();
-}
+    return () => FocusScope.of(context).unfocus();
+  }
 }

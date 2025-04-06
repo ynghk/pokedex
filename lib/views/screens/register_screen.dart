@@ -154,6 +154,7 @@ class RegisterScreen extends StatelessWidget {
                       SnackBar(
                         content: Text('Passwords do not match!'),
                         duration: Duration(seconds: 2),
+                        backgroundColor: Colors.red,
                       ),
                     );
                     return;
@@ -170,23 +171,25 @@ class RegisterScreen extends StatelessWidget {
                       SnackBar(
                         content: Text('Registration Successful!'),
                         duration: Duration(seconds: 2),
+                        backgroundColor: Color(0xFF702fc8),
                       ),
                     );
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => PokemonListScreen(
-                                isDarkMode: false, // 다크모드 상태는 앱 설정에 따라 조정
-                                onThemeChanged: (_) {},
-                              ),
-                        ),
-                      );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => PokemonListScreen(
+                              isDarkMode: false, // 다크모드 상태는 앱 설정에 따라 조정
+                              onThemeChanged: (_) {},
+                            ),
+                      ),
+                    );
                   } else if (viewModel.errorMessage != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(viewModel.errorMessage!),
                         duration: Duration(seconds: 2),
+                        backgroundColor: Colors.red,
                       ),
                     );
                   }
