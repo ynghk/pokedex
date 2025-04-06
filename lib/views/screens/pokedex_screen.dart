@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
@@ -214,19 +216,28 @@ class PokedexScreen extends StatelessWidget {
                           child: InkWell(
                             splashColor: Colors.transparent,
                             onTap: () {
-                              final isCurrentlyBookmarked = bookmarkViewModel
-                                  .isBookmarked(pokedex);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isCurrentlyBookmarked
-                                        ? 'Bookmared Removed!'
-                                        : 'Bookmared!',
+                              if (FirebaseAuth.instance.currentUser == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Sign in th use bookmark'),
+                                    duration: Duration(milliseconds: 500),
                                   ),
-                                  duration: Duration(milliseconds: 500),
-                                ),
-                              );
-                              bookmarkViewModel.toggleBookmark(pokedex);
+                                );
+                              } else {
+                                final isCurrentlyBookmarked = bookmarkViewModel
+                                    .isBookmarked(pokedex);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      isCurrentlyBookmarked
+                                          ? 'Bookmared Removed!'
+                                          : 'Bookmared!',
+                                    ),
+                                    duration: Duration(milliseconds: 500),
+                                  ),
+                                );
+                                bookmarkViewModel.toggleBookmark(pokedex);
+                              }
                             },
                             child: Padding(
                               padding: const EdgeInsets.only(right: 12.0),

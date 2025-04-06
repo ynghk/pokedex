@@ -35,6 +35,12 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 비밀번호만 초기화하는 메서드 (추가)
+  void clearPassword() {
+    passwordController.text = "";
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     emailController.dispose();

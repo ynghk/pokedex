@@ -1,11 +1,10 @@
-// lib/viewmodels/bookmark_viewmodel.dart
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // 정렬 방식 열거형
 enum BookmarkSortOption {
@@ -66,10 +65,130 @@ class BookmarkViewModel with ChangeNotifier {
   // 타입 캐시 추가
   final Map<int, List<String>> _typeCache = {};
 
+  //Firestore 인스턴스 추가
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // 현재 사용자 UID 가져오기
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+
   BookmarkViewModel({required this.repository}) {
     _init();
     // 검색어 변경 리스너 추가
     _textController.addListener(_onSearchChanged);
+  }
+
+  // 초기화 메서드
+  Future<void> _init() async {
+    if (_uid == null) {
+      _isInitialized = true;
+      notifyListeners();
+      return; // 로그인되지 않은 경우 초기화만
+    }
+    try {
+      await _loadBookmarks();
+    } catch (e) {
+      print("북마크 로드 실패: $e");
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
+    }
+  }
+
+  // Firestore에 북마크 저장
+  Future<void> _saveBookmark(PokedexEntry pokemon) async {
+    if (_uid == null) return;
+    print("Saving to path: /bookmarks/$_uid/bookmarks/${pokemon.id}");
+    try {
+      final bookmarkItem = BookmarkedItem(
+        pokemon: pokemon,
+        dateAdded: DateTime.now(),
+      );
+      await _firestore
+          .collection('bookmarks')
+          .doc(_uid)
+          .collection('bookmarks')
+          .doc(pokemon.id.toString())
+          .set(bookmarkItem.toJson());
+      print("Bookmark saved successfully: ${pokemon.name}");
+    } catch (e) {
+      print("Firestore 북마크 저장 오류: $e");
+    }
+    print(
+      "Current User: ${FirebaseAuth.instance.currentUser?.email ?? 'Not logged in'}",
+    );
+    print("Current UID: $_uid");
+  }
+
+  // Firestore에서 북마크 로드
+  Future<void> _loadBookmarks() async {
+    if (_uid == null) return;
+    print("Loading from path: /bookmarks/$_uid/bookmarks");
+    try {
+      final snapshot =
+          await _firestore
+              .collection('bookmarks')
+              .doc(_uid)
+              .collection('bookmarks')
+              .get();
+      _bookmarkedItems.clear();
+      _bookmarkedItems.addAll(
+        snapshot.docs
+            .map((doc) => BookmarkedItem.fromJson(doc.data()))
+            .toList(),
+      );
+      print("Bookmarks loaded: ${_bookmarkedItems.length} items");
+    } catch (e) {
+      print("Firestore 북마크 로드 오류: $e");
+    }
+  }
+
+  // Firestore에서 북마크 삭제
+  Future<void> _removeBookmark(PokedexEntry pokemon) async {
+    if (_uid == null) return;
+    try {
+      await _firestore
+          .collection('bookmarks')
+          .doc(_uid)
+          .collection('bookmarks')
+          .doc(pokemon.id.toString())
+          .delete();
+    } catch (e) {
+      print("Firestore 북마크 삭제 오류: $e");
+    }
+  }
+
+  // 북마크 추가/제거
+  Future<void> toggleBookmark(PokedexEntry pokemon) async {
+    if (_uid == null) {
+      print("로그인이 필요합니다.");
+      return;
+    }
+    if (isBookmarked(pokemon)) {
+      _bookmarkedItems.removeWhere((item) => item.pokemon.id == pokemon.id);
+      await _removeBookmark(pokemon);
+    } else {
+      _bookmarkedItems.add(
+        BookmarkedItem(pokemon: pokemon, dateAdded: DateTime.now()),
+      );
+      await _saveBookmark(pokemon);
+    }
+    notifyListeners();
+  }
+
+  // 북마크 여부 확인
+  bool isBookmarked(PokedexEntry pokemon) {
+    return _bookmarkedItems.any((item) => item.pokemon.id == pokemon.id);
+  }
+
+  // 북마크 새로고침 메서드
+  Future<void> refreshBookmarks() async {
+    if (_uid == null) return;
+    try {
+      await _loadBookmarks();
+      notifyListeners();
+    } catch (e) {
+      print("북마크 새로고침 실패: $e");
+    }
   }
 
   // 정렬 옵션 업데이트 메서드
@@ -170,98 +289,6 @@ class BookmarkViewModel with ChangeNotifier {
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  // 초기화 메서드
-  Future<void> _init() async {
-    try {
-      await _loadBookmarks();
-    } catch (e) {
-      print("북마크 로드 실패: $e");
-    } finally {
-      _isInitialized = true;
-      notifyListeners();
-    }
-  }
-
-  // 북마크 로드
-  Future<void> _loadBookmarks() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? bookmarkData = prefs.getString('bookmarked_pokemons');
-
-      if (bookmarkData != null && bookmarkData.isNotEmpty) {
-        final List<dynamic> jsonList = jsonDecode(bookmarkData);
-        _bookmarkedItems.clear();
-
-        // 형식 확인 및 변환
-        if (jsonList.isNotEmpty &&
-            jsonList[0] is Map &&
-            jsonList[0].containsKey('dateAdded')) {
-          // 새 형식 (BookmarkedItem)
-          _bookmarkedItems.addAll(
-            jsonList.map((json) => BookmarkedItem.fromJson(json)).toList(),
-          );
-        } else {
-          // 기존 형식 (PokedexEntry)에서 변환 - 현재 시간 사용
-          _bookmarkedItems.addAll(
-            jsonList
-                .map(
-                  (json) => BookmarkedItem(
-                    pokemon: PokedexEntry(
-                      id: json['id'],
-                      name: json['name'],
-                      url: json['url'],
-                    ),
-                    dateAdded: DateTime.now(),
-                  ),
-                )
-                .toList(),
-          );
-        }
-      }
-    } catch (e) {
-      print("북마크 데이터 파싱 오류: $e");
-    }
-  }
-
-  // 북마크 저장
-  Future<void> _saveBookmarks() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonList = _bookmarkedItems.map((item) => item.toJson()).toList();
-      await prefs.setString('bookmarked_pokemons', jsonEncode(jsonList));
-    } catch (e) {
-      print("북마크 저장 오류: $e");
-    }
-  }
-
-  // 북마크 추가/제거
-  Future<void> toggleBookmark(PokedexEntry pokemon) async {
-    if (isBookmarked(pokemon)) {
-      _bookmarkedItems.removeWhere((item) => item.pokemon.id == pokemon.id);
-    } else {
-      _bookmarkedItems.add(
-        BookmarkedItem(pokemon: pokemon, dateAdded: DateTime.now()),
-      );
-    }
-    await _saveBookmarks();
-    notifyListeners();
-  }
-
-  // 북마크 여부 확인
-  bool isBookmarked(PokedexEntry pokemon) {
-    return _bookmarkedItems.any((item) => item.pokemon.id == pokemon.id);
-  }
-
-  // 북마크 새로고침 메서드
-  Future<void> refreshBookmarks() async {
-    try {
-      await _loadBookmarks();
-      notifyListeners();
-    } catch (e) {
-      print("북마크 새로고침 실패: $e");
-    }
   }
 
   // 포켓몬 타입 가져오기

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
 import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
+import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
 import 'package:poke_master/views/screens/bookmark_screen.dart';
 import 'package:poke_master/views/screens/login_screen.dart';
 import 'package:poke_master/views/screens/pokedex_screen.dart';
@@ -661,11 +662,12 @@ class PokemonListViewModel with ChangeNotifier {
     );
   }
 
-  //로그인/로그아웃 상태관리
-  void checkAuthState() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    notifyListeners();
-  }
+  // 로그인/로그아웃 상태관리
+  void checkAuthState(BuildContext context) {
+  final bookmarkViewModel = Provider.of<BookmarkViewModel>(context, listen: false);
+  bookmarkViewModel.refreshBookmarks(); // 북마크 갱신
+  notifyListeners();
+}
 
   //북마크로 이동
   void navigateToBookmarks(BuildContext context, bool isDarkMode) {
@@ -677,15 +679,15 @@ class PokemonListViewModel with ChangeNotifier {
         MaterialPageRoute(builder: (context) => LoginScreen()),
       ).then((_) {
         if (FirebaseAuth.instance.currentUser != null) {
-          checkAuthState();
+          checkAuthState(context);
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => BookmarkScreen(isDarkMode: isDarkMode),
             ),
-          ).then((_) => checkAuthState());
+          ).then((_) => checkAuthState(context));
         }
-        checkAuthState();
+        checkAuthState(context);
       });
     } else {
       Navigator.push(
@@ -693,7 +695,7 @@ class PokemonListViewModel with ChangeNotifier {
         MaterialPageRoute(
           builder: (context) => BookmarkScreen(isDarkMode: isDarkMode),
         ),
-      ).then((_) => checkAuthState());
+      ).then((_) => checkAuthState(context));
     }
   }
 }

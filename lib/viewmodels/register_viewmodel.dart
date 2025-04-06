@@ -13,7 +13,11 @@ class RegisterViewModel extends ChangeNotifier {
   bool get isRegistering => _isRegistering;
   String? get errorMessage => _errorMessage;
 
-  Future<void> registerUser(String email, String password) async {
+  Future<bool> registerUser(
+    String email,
+    String password,
+    BuildContext context,
+  ) async {
     _isRegistering = true;
     _errorMessage = null;
     notifyListeners();
@@ -24,6 +28,9 @@ class RegisterViewModel extends ChangeNotifier {
         email: email.trim(),
         password: password.trim(),
       );
+      _isRegistering = false;
+      notifyListeners();
+      return true;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         _errorMessage = 'Password at least 6 characters!';
@@ -40,6 +47,7 @@ class RegisterViewModel extends ChangeNotifier {
 
     _isRegistering = false;
     notifyListeners();
+    return false;
   }
 
   void clearTextfields() {
@@ -59,6 +67,6 @@ class RegisterViewModel extends ChangeNotifier {
 
   // 키보드 내리기
   VoidCallback unfocusKeyboard(BuildContext context) {
-  return () => FocusScope.of(context).unfocus();
-}
+    return () => FocusScope.of(context).unfocus();
+  }
 }
