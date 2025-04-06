@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:poke_master/viewmodels/login_viewmodel.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:poke_master/views/screens/login_screen.dart';
 import 'package:provider/provider.dart';
@@ -106,7 +107,7 @@ class PokemonListScreen extends StatelessWidget {
                                 context,
                                 isDarkMode,
                               );
-                              viewModel.checkAuthState();
+                              viewModel.checkAuthState(context);
                             },
                             child: ListTile(
                               leading: Image.asset(
@@ -185,6 +186,11 @@ class PokemonListScreen extends StatelessWidget {
                                 ),
                                 title: Text(
                                   'Are you sure you want to log out?',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                                 actions: [
                                   TextButton(
@@ -199,6 +205,10 @@ class PokemonListScreen extends StatelessWidget {
                                   TextButton(
                                     onPressed: () {
                                       FirebaseAuth.instance.signOut();
+                                      Provider.of<LoginViewModel>(
+                                        context,
+                                        listen: false,
+                                      ).clearPassword();
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
@@ -207,15 +217,13 @@ class PokemonListScreen extends StatelessWidget {
                                           duration: Duration(seconds: 2),
                                         ),
                                       );
-                                      viewModel.checkAuthState();
+                                      viewModel.checkAuthState(context);
                                       Navigator.pop(dialogContext);
                                       Navigator.pop(context);
                                     },
                                     child: Text(
                                       'Confirm',
-                                      style: TextStyle(
-                                        color: Color(0xFF702fc8),
-                                      ),
+                                      style: TextStyle(color: Colors.red),
                                     ),
                                   ),
                                 ],
@@ -229,7 +237,11 @@ class PokemonListScreen extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (context) => LoginScreen(),
                             ),
-                          ).then((_) => viewModel.checkAuthState());
+                          ).then((_) {
+                            if (FirebaseAuth.instance.currentUser != null) {
+                              viewModel.checkAuthState(context);
+                            }
+                          });
                         }
                       },
                     ),

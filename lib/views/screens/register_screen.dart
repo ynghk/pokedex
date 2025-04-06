@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:poke_master/views/screens/bookmark_screen.dart';
+import 'package:poke_master/views/screens/pokemon_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:poke_master/viewmodels/register_viewmodel.dart';
 
@@ -157,20 +159,30 @@ class RegisterScreen extends StatelessWidget {
                     return;
                   }
 
-                  await viewModel.registerUser(
+                  bool success = await viewModel.registerUser(
                     viewModel.emailController.text,
                     viewModel.passwordController.text,
+                    context,
                   );
 
-                  if (viewModel.errorMessage == null) {
+                  if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Registration successful!'),
+                        content: Text('Registration Successful!'),
                         duration: Duration(seconds: 2),
                       ),
                     );
-                    Navigator.pop(context); // 로그인 화면으로 돌아가기
-                  } else {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => PokemonListScreen(
+                                isDarkMode: false, // 다크모드 상태는 앱 설정에 따라 조정
+                                onThemeChanged: (_) {},
+                              ),
+                        ),
+                      );
+                  } else if (viewModel.errorMessage != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(viewModel.errorMessage!),

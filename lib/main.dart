@@ -103,7 +103,10 @@ class _MyAppState extends State<MyApp> {
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Provider<PokemonRepository>.value(
         value: widget.repository,
-        child: PokemonListScreen(isDarkMode: _isDarkMode, onThemeChanged: _toggleTheme),
+        child: PokemonListScreen(
+          isDarkMode: _isDarkMode,
+          onThemeChanged: _toggleTheme,
+        ),
       ),
     );
   }
