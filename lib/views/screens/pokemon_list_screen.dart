@@ -213,7 +213,14 @@ class PokemonListScreen extends StatelessWidget {
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text('See ya!'),
+                                          content: Text(
+                                            'See ya!',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
                                           duration: Duration(seconds: 2),
                                           backgroundColor: Colors.red,
                                         ),

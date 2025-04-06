@@ -57,6 +57,11 @@ class LoginScreen extends StatelessWidget {
                                       SnackBar(
                                         content: Text(
                                           'Please enter email and password',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
                                         duration: Duration(seconds: 2),
                                         backgroundColor: Colors.red,
@@ -71,7 +76,14 @@ class LoginScreen extends StatelessWidget {
                                   if (viewModel.errorMessage == null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Welcome trainer!'),
+                                        content: Text(
+                                          'Welcome trainer!',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
                                         duration: Duration(seconds: 2),
                                         backgroundColor: Color(0xFF702fc8),
                                       ),
