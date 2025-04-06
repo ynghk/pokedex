@@ -59,7 +59,7 @@ class LoginScreen extends StatelessWidget {
                                           'Please enter email and password',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -77,10 +77,10 @@ class LoginScreen extends StatelessWidget {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Welcome trainer!',
+                                          'Welcome ${viewModel.trainerName}!',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),

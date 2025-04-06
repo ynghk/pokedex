@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -6,20 +7,35 @@ class LoginViewModel extends ChangeNotifier {
   final TextEditingController passwordController = TextEditingController();
   bool _isLoggingIn = false;
   String? _errorMessage;
+  String? _trainerName;
 
   bool get isLoggingIn => _isLoggingIn;
   String? get errorMessage => _errorMessage;
+  String? get trainerName => _trainerName;
 
   Future<void> signUserIn(String email, String password) async {
     _isLoggingIn = true;
     _errorMessage = null;
+    _trainerName = null;
     notifyListeners();
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: email.trim(),
+            password: password.trim(),
+          );
+      // Firestore에서 트레이너 이름 가져오기
+      final user = userCredential.user;
+      if (user != null) {
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get();
+        // 로그인 성공 시 트레이너 이름 가져오기
+        _trainerName = doc.data()?['trainerName'] ?? 'Trainer';
+      }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'invalid-credential':
@@ -48,7 +64,7 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 텍스트 필드 초기화 메서드
+  // 텍스트 필드 초기화 버튼 메서드
   void clearTextfield() {
     emailController.clear();
     passwordController.clear();
