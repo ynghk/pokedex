@@ -31,7 +31,7 @@ class ApiService {
     return entries.map((e) => PokedexEntry.fromJson(e)).toList();
   }
 
-  Future<PokemonDetail> getPokemonDetail(int id) async {
+  Future<PokedexDetail> getPokemonDetail(int id) async {
     final speciesResponse = await http.get(
       Uri.parse('https://pokeapi.co/api/v2/pokemon-species/$id'),
     );
@@ -67,7 +67,7 @@ class ApiService {
         }
       }
 
-      return PokemonDetail(
+      return PokedexDetail(
         height: height,
         weight: weight,
         types: types,

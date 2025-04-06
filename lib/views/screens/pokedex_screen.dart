@@ -1,9 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
-import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
-import 'package:poke_master/viewmodels/pokemon_detail_viewmodel.dart';
+import 'package:poke_master/viewmodels/pokedex_viewmodel.dart';
 import 'package:poke_master/viewmodels/shiny_pokemon_viewmodel.dart';
 import 'package:poke_master/views/widgets/evolution_stage_widget.dart';
 import 'package:poke_master/views/widgets/pokemon_image.dart';
@@ -29,7 +29,7 @@ class PokedexScreen extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) {
             // ViewModel의 라이프사이클을 더 명확하게 관리
-            final viewModel = PokemonDetailViewModel(repository, pokedex.id);
+            final viewModel = PokedexViewModel(repository, pokedex.id);
             // 별도의 메서드 호출 대신 즉시 fetchData 호출
             viewModel.fetchData();
             return viewModel;
@@ -37,7 +37,7 @@ class PokedexScreen extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => ShinyPokemonViewmodel()),
       ],
-      child: Consumer2<PokemonDetailViewModel, ShinyPokemonViewmodel>(
+      child: Consumer2<PokedexViewModel, ShinyPokemonViewmodel>(
         builder: (context, detailViewModel, shinyViewModel, child) {
           return Scaffold(
             appBar: AppBar(
@@ -156,7 +156,7 @@ class PokedexScreen extends StatelessWidget {
 
   Widget _buildPokemonDetail(
     BuildContext context,
-    PokemonDetailViewModel detailViewModel,
+    PokedexViewModel detailViewModel,
     ShinyPokemonViewmodel shinyViewModel,
   ) {
     final detail = detailViewModel.pokemonDetail!;
@@ -215,19 +215,45 @@ class PokedexScreen extends StatelessWidget {
                           child: InkWell(
                             splashColor: Colors.transparent,
                             onTap: () {
-                              final isCurrentlyBookmarked = bookmarkViewModel
-                                  .isBookmarked(pokedex);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isCurrentlyBookmarked
-                                        ? 'Bookmared Removed!'
-                                        : 'Bookmared!',
+                              if (FirebaseAuth.instance.currentUser == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Sign in to use bookmark',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    duration: Duration(seconds: 1),
+                                    backgroundColor: Colors.red,
                                   ),
-                                  duration: Duration(milliseconds: 500),
-                                ),
-                              );
-                              bookmarkViewModel.toggleBookmark(pokedex);
+                                );
+                              } else {
+                                final isCurrentlyBookmarked = bookmarkViewModel
+                                    .isBookmarked(pokedex);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      isCurrentlyBookmarked
+                                          ? 'Bookmark Removed!'
+                                          : 'Bookmarked!',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    duration: Duration(milliseconds: 500),
+                                    backgroundColor:
+                                        isCurrentlyBookmarked
+                                            ? Colors.red
+                                            : Color(0xFF702fc8),
+                                  ),
+                                );
+                                bookmarkViewModel.toggleBookmark(pokedex);
+                              }
                             },
                             child: Padding(
                               padding: const EdgeInsets.only(right: 12.0),
