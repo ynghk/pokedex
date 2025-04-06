@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
@@ -223,7 +222,7 @@ class PokedexScreen extends StatelessWidget {
                                       'Sign in to use bookmark',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -242,7 +241,7 @@ class PokedexScreen extends StatelessWidget {
                                           : 'Bookmarked!',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),

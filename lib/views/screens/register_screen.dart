@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:poke_master/views/screens/bookmark_screen.dart';
 import 'package:poke_master/views/screens/pokemon_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:poke_master/viewmodels/register_viewmodel.dart';
@@ -27,11 +26,18 @@ class RegisterScreen extends StatelessWidget {
                         width: 320,
                       ),
 
-                      // 이메일 입력 필드
                       SizedBox(height: 40),
                       _buildTextField(
+                        controller: viewModel.trainerNameController,
+                        hintText: 'Trainer Name',
+                        viewModel: viewModel,
+                      ),
+
+                      // 이메일 입력 필드
+                      SizedBox(height: 10),
+                      _buildTextField(
                         controller: viewModel.emailController,
-                        hintText: 'Example@email.com',
+                        hintText: 'ID: Example@email.com',
                         viewModel: viewModel,
                       ),
 
@@ -156,7 +162,7 @@ class RegisterScreen extends StatelessWidget {
                           'Passwords do not match!',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -168,6 +174,7 @@ class RegisterScreen extends StatelessWidget {
                   }
 
                   bool success = await viewModel.registerUser(
+                    viewModel.trainerNameController.text,
                     viewModel.emailController.text,
                     viewModel.passwordController.text,
                     context,

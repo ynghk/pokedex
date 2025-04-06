@@ -217,7 +217,7 @@ class PokemonListScreen extends StatelessWidget {
                                             'See ya!',
                                             style: TextStyle(
                                               fontSize: 16,
-                                              fontWeight: FontWeight.w500,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
