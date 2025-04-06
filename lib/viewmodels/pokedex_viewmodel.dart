@@ -6,10 +6,10 @@ import 'package:poke_master/models/pokedex_entry.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/views/screens/pokedex_screen.dart';
 
-class PokemonDetailViewModel with ChangeNotifier {
+class PokedexViewModel with ChangeNotifier {
   final PokemonRepository _repository;
   final int pokemonId;
-  PokemonDetail? _pokemonDetail;
+  PokedexDetail? _pokemonDetail;
   List<EvolutionStage>? _evolutionChain;
   bool _isLoading = false;
   String? _error;
@@ -17,10 +17,10 @@ class PokemonDetailViewModel with ChangeNotifier {
   bool _isDisposed = false;
   bool get isDisposed => _isDisposed;
 
-  PokemonDetailViewModel(this._repository, this.pokemonId);
+  PokedexViewModel(this._repository, this.pokemonId);
 
   // Getters
-  PokemonDetail? get pokemonDetail => _pokemonDetail;
+  PokedexDetail? get pokemonDetail => _pokemonDetail;
   List<EvolutionStage>? get evolutionChain => _evolutionChain;
   bool get isLoading => _isLoading;
   String? get error => _error;

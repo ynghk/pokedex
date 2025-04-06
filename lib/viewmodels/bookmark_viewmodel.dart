@@ -1,10 +1,10 @@
-// lib/viewmodels/bookmark_viewmodel.dart
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
-import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:poke_master/views/screens/pokedex_screen.dart';
+import 'package:provider/provider.dart';
 
 // 정렬 방식 열거형
 enum BookmarkSortOption {
@@ -46,9 +46,16 @@ class BookmarkViewModel with ChangeNotifier {
   final PokemonRepository repository;
   final List<BookmarkedItem> _bookmarkedItems = [];
   bool _isInitialized = false;
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textController = TextEditingController();
+
+  // 정렬 옵션 getter
+  BookmarkSortOption get sortOption => _sortOption;
+  // Textcontroller getters
+  TextEditingController get textController => _textController;
+  ScrollController get scrollController => _scrollController;
 
   // 검색 관련 변수들 추가
-  final TextEditingController textController = TextEditingController();
   String _searchQuery = '';
 
   // 정렬 관련 변수
@@ -58,14 +65,131 @@ class BookmarkViewModel with ChangeNotifier {
   // 타입 캐시 추가
   final Map<int, List<String>> _typeCache = {};
 
+  //Firestore 인스턴스 추가
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // 현재 사용자 UID 가져오기
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+
   BookmarkViewModel({required this.repository}) {
     _init();
     // 검색어 변경 리스너 추가
-    textController.addListener(_onSearchChanged);
+    _textController.addListener(_onSearchChanged);
   }
 
-  // 정렬 옵션 getter
-  BookmarkSortOption get sortOption => _sortOption;
+  // 초기화 메서드
+  Future<void> _init() async {
+    if (_uid == null) {
+      _isInitialized = true;
+      notifyListeners();
+      return; // 로그인되지 않은 경우 초기화만
+    }
+    try {
+      await _loadBookmarks();
+    } catch (e) {
+      print("북마크 로드 실패: $e");
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
+    }
+  }
+
+  // Firestore에 북마크 저장
+  Future<void> _saveBookmark(PokedexEntry pokemon) async {
+    if (_uid == null) return;
+    print("Saving to path: /bookmarks/$_uid/bookmarks/${pokemon.id}");
+    try {
+      final bookmarkItem = BookmarkedItem(
+        pokemon: pokemon,
+        dateAdded: DateTime.now(),
+      );
+      await _firestore
+          .collection('bookmarks')
+          .doc(_uid)
+          .collection('bookmarks')
+          .doc(pokemon.id.toString())
+          .set(bookmarkItem.toJson());
+      print("Bookmark saved successfully: ${pokemon.name}");
+    } catch (e) {
+      print("Firestore 북마크 저장 오류: $e");
+    }
+    print(
+      "Current User: ${FirebaseAuth.instance.currentUser?.email ?? 'Not logged in'}",
+    );
+    print("Current UID: $_uid");
+  }
+
+  // Firestore에서 북마크 로드
+  Future<void> _loadBookmarks() async {
+    if (_uid == null) return;
+    print("Loading from path: /bookmarks/$_uid/bookmarks");
+    try {
+      final snapshot =
+          await _firestore
+              .collection('bookmarks')
+              .doc(_uid)
+              .collection('bookmarks')
+              .get();
+      _bookmarkedItems.clear();
+      _bookmarkedItems.addAll(
+        snapshot.docs
+            .map((doc) => BookmarkedItem.fromJson(doc.data()))
+            .toList(),
+      );
+      print("Bookmarks loaded: ${_bookmarkedItems.length} items");
+    } catch (e) {
+      print("Firestore 북마크 로드 오류: $e");
+    }
+  }
+
+  // Firestore에서 북마크 삭제
+  Future<void> _removeBookmark(PokedexEntry pokemon) async {
+    if (_uid == null) return;
+    try {
+      await _firestore
+          .collection('bookmarks')
+          .doc(_uid)
+          .collection('bookmarks')
+          .doc(pokemon.id.toString())
+          .delete();
+    } catch (e) {
+      print("Firestore 북마크 삭제 오류: $e");
+    }
+  }
+
+  // 북마크 추가/제거
+  Future<void> toggleBookmark(PokedexEntry pokemon) async {
+    if (_uid == null) {
+      print("로그인이 필요합니다.");
+      return;
+    }
+    if (isBookmarked(pokemon)) {
+      _bookmarkedItems.removeWhere((item) => item.pokemon.id == pokemon.id);
+      await _removeBookmark(pokemon);
+    } else {
+      _bookmarkedItems.add(
+        BookmarkedItem(pokemon: pokemon, dateAdded: DateTime.now()),
+      );
+      await _saveBookmark(pokemon);
+    }
+    notifyListeners();
+  }
+
+  // 북마크 여부 확인
+  bool isBookmarked(PokedexEntry pokemon) {
+    return _bookmarkedItems.any((item) => item.pokemon.id == pokemon.id);
+  }
+
+  // 북마크 새로고침 메서드
+  Future<void> refreshBookmarks() async {
+    if (_uid == null) return;
+    try {
+      await _loadBookmarks();
+      notifyListeners();
+    } catch (e) {
+      print("북마크 새로고침 실패: $e");
+    }
+  }
 
   // 정렬 옵션 업데이트 메서드
   void updateSortOption(BookmarkSortOption option) {
@@ -75,7 +199,7 @@ class BookmarkViewModel with ChangeNotifier {
 
   // 검색어 변경 감지 메서드
   void _onSearchChanged() {
-    updateSearchQuery(textController.text);
+    updateSearchQuery(_textController.text);
   }
 
   // 검색어 업데이트 메서드
@@ -86,7 +210,7 @@ class BookmarkViewModel with ChangeNotifier {
 
   // 검색 초기화 메서드
   void clearSearch() {
-    textController.clear();
+    _textController.clear();
     _searchQuery = '';
     notifyListeners();
   }
@@ -161,101 +285,10 @@ class BookmarkViewModel with ChangeNotifier {
 
   @override
   void dispose() {
-    textController.removeListener(_onSearchChanged);
-    textController.dispose();
+    _textController.removeListener(_onSearchChanged);
+    _textController.dispose();
+    _scrollController.dispose();
     super.dispose();
-  }
-
-  // 초기화 메서드
-  Future<void> _init() async {
-    try {
-      await _loadBookmarks();
-    } catch (e) {
-      print("북마크 로드 실패: $e");
-    } finally {
-      _isInitialized = true;
-      notifyListeners();
-    }
-  }
-
-  // 북마크 로드
-  Future<void> _loadBookmarks() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? bookmarkData = prefs.getString('bookmarked_pokemons');
-
-      if (bookmarkData != null && bookmarkData.isNotEmpty) {
-        final List<dynamic> jsonList = jsonDecode(bookmarkData);
-        _bookmarkedItems.clear();
-
-        // 형식 확인 및 변환
-        if (jsonList.isNotEmpty &&
-            jsonList[0] is Map &&
-            jsonList[0].containsKey('dateAdded')) {
-          // 새 형식 (BookmarkedItem)
-          _bookmarkedItems.addAll(
-            jsonList.map((json) => BookmarkedItem.fromJson(json)).toList(),
-          );
-        } else {
-          // 기존 형식 (PokedexEntry)에서 변환 - 현재 시간 사용
-          _bookmarkedItems.addAll(
-            jsonList
-                .map(
-                  (json) => BookmarkedItem(
-                    pokemon: PokedexEntry(
-                      id: json['id'],
-                      name: json['name'],
-                      url: json['url'],
-                    ),
-                    dateAdded: DateTime.now(),
-                  ),
-                )
-                .toList(),
-          );
-        }
-      }
-    } catch (e) {
-      print("북마크 데이터 파싱 오류: $e");
-    }
-  }
-
-  // 북마크 저장
-  Future<void> _saveBookmarks() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonList = _bookmarkedItems.map((item) => item.toJson()).toList();
-      await prefs.setString('bookmarked_pokemons', jsonEncode(jsonList));
-    } catch (e) {
-      print("북마크 저장 오류: $e");
-    }
-  }
-
-  // 북마크 추가/제거
-  Future<void> toggleBookmark(PokedexEntry pokemon) async {
-    if (isBookmarked(pokemon)) {
-      _bookmarkedItems.removeWhere((item) => item.pokemon.id == pokemon.id);
-    } else {
-      _bookmarkedItems.add(
-        BookmarkedItem(pokemon: pokemon, dateAdded: DateTime.now()),
-      );
-    }
-    await _saveBookmarks();
-    notifyListeners();
-  }
-
-  // 북마크 여부 확인
-  bool isBookmarked(PokedexEntry pokemon) {
-    return _bookmarkedItems.any((item) => item.pokemon.id == pokemon.id);
-  }
-
-  // 북마크 새로고침 메서드
-  Future<void> refreshBookmarks() async {
-    try {
-      await _loadBookmarks();
-      notifyListeners();
-    } catch (e) {
-      print("북마크 새로고침 실패: $e");
-    }
   }
 
   // 포켓몬 타입 가져오기
@@ -294,7 +327,7 @@ class BookmarkViewModel with ChangeNotifier {
                       padding: const EdgeInsets.only(right: 3.0),
                       child: Chip(
                         label: Text(
-                          type.capitalize(),
+                          StringCapitalizeExtension(type).capitalize(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -395,5 +428,161 @@ class BookmarkViewModel with ChangeNotifier {
         },
       ),
     );
+  }
+
+  // 스크롤 상단으로 이동 버튼
+  void scrollToTop() {
+    if (_scrollController.hasClients) {
+      // 연결된 뷰가 있는지 확인
+      _scrollController.animateTo(
+        0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void navigateToDetail(BuildContext context, PokedexEntry pokemon) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => Provider<PokemonRepository>.value(
+              value: repository,
+              child: PokedexScreen(pokedex: pokemon, isDarkMode: false),
+            ),
+      ),
+    );
+  }
+}
+
+// 정렬 옵션 다이얼로그
+void showSortOptionsDialog(BuildContext context) {
+  final bookmarkViewModel = Provider.of<BookmarkViewModel>(
+    context,
+    listen: false,
+  );
+
+  showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          titlePadding: EdgeInsets.zero,
+          title: Container(
+            height: 80,
+            decoration: BoxDecoration(
+              color: Color(0xFF702fc8),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Spacer(),
+                Image.asset('assets/sort_title.png', fit: BoxFit.contain),
+
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'First Added',
+                BookmarkSortOption.dateAddedNewest,
+                Icons.access_time,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Lastly Added',
+                BookmarkSortOption.dateAddedOldest,
+                Icons.history,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Number (Ascending)',
+                BookmarkSortOption.numberAscending,
+                Icons.arrow_upward,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Number (Descending)',
+                BookmarkSortOption.numberDescending,
+                Icons.arrow_downward,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Name (A to Z)',
+                BookmarkSortOption.nameAscending,
+                Icons.sort_by_alpha,
+              ),
+              Divider(height: 1, color: Colors.grey),
+              _buildSortOptionTile(
+                context,
+                bookmarkViewModel,
+                'Name (Z to A)',
+                BookmarkSortOption.nameDescending,
+                Icons.sort_by_alpha,
+              ),
+            ],
+          ),
+        ),
+  );
+}
+
+// 정렬 옵션 타일
+Widget _buildSortOptionTile(
+  BuildContext context,
+  BookmarkViewModel viewModel,
+  String title,
+  BookmarkSortOption option,
+  IconData icon,
+) {
+  final isSelected = viewModel.sortOption == option;
+  return ListTile(
+    title: Text(
+      title,
+      style: TextStyle(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? Color(0xFF702fc8) : null,
+      ),
+    ),
+    leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
+    trailing:
+        isSelected ? Icon(Icons.check_circle, color: Color(0xFF702fc8)) : null,
+    onTap: () {
+      viewModel.updateSortOption(option);
+      // 정렬 옵션 선택 후 다이얼로그 닫기
+      Navigator.pop(context);
+    },
+  );
+}
+
+// String 확장 메서드가 없을 경우 추가
+extension StringCapitalizeExtension on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

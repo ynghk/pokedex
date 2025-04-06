@@ -1,7 +1,6 @@
 // lib/views/screens/bookmark_screen.dart
 import 'package:flutter/material.dart';
 import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
-import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class BookmarkScreen extends StatelessWidget {
@@ -15,7 +14,7 @@ class BookmarkScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Color(0xFF702fc8),
         centerTitle: true,
-        title: Image.asset('assets/bookmark.png', width: 170),
+        title: Image.asset('assets/bookmark.png', width: 160),
         iconTheme: IconThemeData(color: Colors.white, size: 30),
         automaticallyImplyLeading: false,
         leading: IconButton(
@@ -28,7 +27,7 @@ class BookmarkScreen extends StatelessWidget {
           InkWell(
             onTap: () {
               // 정렬 옵션 다이얼로그 표시
-              _showSortOptionsDialog(context);
+              showSortOptionsDialog(context);
             },
             child: Padding(
               padding: const EdgeInsets.only(right: 12.0),
@@ -170,11 +169,7 @@ class BookmarkScreen extends StatelessWidget {
               },
               child: InkWell(
                 onTap: () {
-                  final listViewModel = Provider.of<PokemonListViewModel>(
-                    context,
-                    listen: false,
-                  );
-                  listViewModel.navigateToDetail(context, pokemon);
+                  bookmarkViewModel.navigateToDetail(context, pokemon);
                 },
                 child: ListTile(
                   contentPadding: EdgeInsets.symmetric(horizontal: 5),
@@ -225,138 +220,5 @@ class BookmarkScreen extends StatelessWidget {
       }
       return false;
     };
-  }
-
-  // 정렬 옵션 다이얼로그
-  void _showSortOptionsDialog(BuildContext context) {
-    final bookmarkViewModel = Provider.of<BookmarkViewModel>(
-      context,
-      listen: false,
-    );
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            titlePadding: EdgeInsets.zero,
-            title: Container(
-              height: 80,
-              decoration: BoxDecoration(
-                color: Color(0xFF702fc8),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  topRight: Radius.circular(10),
-                ),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Spacer(),
-                  Image.asset('assets/sort_title.png', fit: BoxFit.contain),
-
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildSortOptionTile(
-                  context,
-                  bookmarkViewModel,
-                  'First Added',
-                  BookmarkSortOption.dateAddedNewest,
-                  Icons.access_time,
-                ),
-                Divider(height: 1, color: Colors.grey),
-                _buildSortOptionTile(
-                  context,
-                  bookmarkViewModel,
-                  'Lastly Added',
-                  BookmarkSortOption.dateAddedOldest,
-                  Icons.history,
-                ),
-                Divider(height: 1, color: Colors.grey),
-                _buildSortOptionTile(
-                  context,
-                  bookmarkViewModel,
-                  'Number (Ascending)',
-                  BookmarkSortOption.numberAscending,
-                  Icons.arrow_upward,
-                ),
-                Divider(height: 1, color: Colors.grey),
-                _buildSortOptionTile(
-                  context,
-                  bookmarkViewModel,
-                  'Number (Descending)',
-                  BookmarkSortOption.numberDescending,
-                  Icons.arrow_downward,
-                ),
-                Divider(height: 1, color: Colors.grey),
-                _buildSortOptionTile(
-                  context,
-                  bookmarkViewModel,
-                  'Name (A to Z)',
-                  BookmarkSortOption.nameAscending,
-                  Icons.sort_by_alpha,
-                ),
-                Divider(height: 1, color: Colors.grey),
-                _buildSortOptionTile(
-                  context,
-                  bookmarkViewModel,
-                  'Name (Z to A)',
-                  BookmarkSortOption.nameDescending,
-                  Icons.sort_by_alpha,
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  // 정렬 옵션 타일
-  Widget _buildSortOptionTile(
-    BuildContext context,
-    BookmarkViewModel viewModel,
-    String title,
-    BookmarkSortOption option,
-    IconData icon,
-  ) {
-    final isSelected = viewModel.sortOption == option;
-    return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Color(0xFF702fc8) : null,
-        ),
-      ),
-      leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
-      trailing:
-          isSelected
-              ? Icon(Icons.check_circle, color: Color(0xFF702fc8))
-              : null,
-      onTap: () {
-        viewModel.updateSortOption(option);
-        // 정렬 옵션 선택 후 다이얼로그 닫기
-        Navigator.pop(context);
-      },
-    );
-  }
-}
-
-// String 확장 메서드가 없을 경우 추가
-extension StringCapitalizeExtension on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

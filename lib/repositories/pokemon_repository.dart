@@ -48,7 +48,7 @@ class PokemonRepository {
     return hisuiIds.contains(p.id);
   }
 
-  Future<PokemonDetail> getPokemonDetail(int id) =>
+  Future<PokedexDetail> getPokemonDetail(int id) =>
       _apiService.getPokemonDetail(id);
   Future<List<EvolutionStage>> getEvolutionChain(int pokemonId) =>
       _apiService.getEvolutionStages(pokemonId);

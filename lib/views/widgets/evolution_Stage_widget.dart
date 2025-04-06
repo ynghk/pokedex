@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:poke_master/models/evolution_stage.dart';
 import 'package:poke_master/models/pokemon_type_colors.dart';
 import 'package:poke_master/models/pokedex_entry.dart';
-import 'package:poke_master/viewmodels/pokemon_detail_viewmodel.dart';
+import 'package:poke_master/viewmodels/pokedex_viewmodel.dart';
 import 'package:poke_master/views/screens/pokedex_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -40,7 +40,7 @@ class EvolutionStageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // ViewModel 가져오기
-    final viewModel = Provider.of<PokemonDetailViewModel>(context);
+    final viewModel = Provider.of<PokedexViewModel>(context);
 
     if (evolutionChain == null || evolutionChain!.isEmpty) {
       return Text(

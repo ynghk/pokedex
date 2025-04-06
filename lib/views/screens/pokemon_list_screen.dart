@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:poke_master/viewmodels/login_viewmodel.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
-import 'package:poke_master/views/screens/bookmark_screen.dart';
+import 'package:poke_master/views/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 
 class PokemonListScreen extends StatelessWidget {
@@ -36,7 +36,7 @@ class PokemonListScreen extends StatelessWidget {
                     ),
               ),
               title: Center(
-                child: Image.asset('assets/pokemaster_title.png', width: 220),
+                child: Image.asset('assets/pokemaster_title.png', width: 200),
               ),
               actions: [
                 Builder(
@@ -74,7 +74,7 @@ class PokemonListScreen extends StatelessWidget {
                             child: Center(
                               child: Image.asset(
                                 'assets/poke_menu_title.png',
-                                fit: BoxFit.fill,
+                                width: 200,
                               ),
                             ),
                           ),
@@ -103,7 +103,11 @@ class PokemonListScreen extends StatelessWidget {
                               // 먼저 Drawer 닫기
                               Navigator.pop(context);
                               // 그 다음 북마크 화면으로 이동
-                              _navigateToBookmarks(context, isDarkMode);
+                              viewModel.navigateToBookmarks(
+                                context,
+                                isDarkMode,
+                              );
+                              viewModel.checkAuthState(context);
                             },
                             child: ListTile(
                               leading: Image.asset(
@@ -160,14 +164,93 @@ class PokemonListScreen extends StatelessWidget {
                     ),
                     Divider(height: 1, color: Colors.grey),
                     ListTile(
-                      trailing: Icon(Icons.logout_rounded, size: 20),
+                      trailing: Icon(
+                        viewModel.isLoggedIn
+                            ? Icons.logout_rounded
+                            : Icons.login_rounded,
+                        size: 20,
+                      ),
                       title: Text(
-                        'Log Out',
+                        viewModel.isLoggedIn ? 'Log Out' : 'Log In',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       tileColor: viewModel.getSettingsTileColor(context),
                       onTap: () {
-                        FirebaseAuth.instance.signOut();
+                        if (viewModel.isLoggedIn) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext dialogContext) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                title: Text(
+                                  'Are you sure you want to log out?',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(dialogContext);
+                                    },
+                                    child: Text(
+                                      'Cancel',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      FirebaseAuth.instance.signOut();
+                                      Provider.of<LoginViewModel>(
+                                        context,
+                                        listen: false,
+                                      ).clearPassword();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'See ya!',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          duration: Duration(seconds: 2),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                      viewModel.checkAuthState(context);
+                                      Navigator.pop(dialogContext);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      'Confirm',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          Navigator.pop(context); // Drawer 닫기
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(),
+                            ),
+                          ).then((_) {
+                            if (FirebaseAuth.instance.currentUser != null) {
+                              viewModel.checkAuthState(context);
+                            }
+                          });
+                        }
                       },
                     ),
                   ],
@@ -190,7 +273,7 @@ class PokemonListScreen extends StatelessWidget {
                             child: Center(
                               child: Image.asset(
                                 'assets/filter_sort_title.png',
-                                fit: BoxFit.fill,
+                                width: 220,
                               ),
                             ),
                           ),
@@ -494,44 +577,33 @@ class PokemonListScreen extends StatelessWidget {
       },
     );
   }
+}
 
-  void _navigateToBookmarks(BuildContext context, bool isDarkMode) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BookmarkScreen(isDarkMode: isDarkMode),
+Widget _buildSortTile(
+  BuildContext context,
+  PokemonListViewModel viewModel,
+  String title,
+  SortOption option,
+  IconData icon,
+) {
+  final isSelected = viewModel.sortOption == option;
+  return ListTile(
+    title: Text(
+      title,
+      style: TextStyle(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? Color(0xFF702fc8) : null,
       ),
-    );
-  }
-
-  Widget _buildSortTile(
-    BuildContext context,
-    PokemonListViewModel viewModel,
-    String title,
-    SortOption option,
-    IconData icon,
-  ) {
-    final isSelected = viewModel.sortOption == option;
-    return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Color(0xFF702fc8) : null,
-        ),
-      ),
-      leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
-      trailing:
-          isSelected
-              ? Icon(Icons.check_circle, color: Color(0xFF702fc8))
-              : null,
-      onTap: () {
-        viewModel.updateSortOption(option);
-        // 정렬 후 Drawer 닫기
-        Navigator.pop(context);
-      },
-    );
-  }
+    ),
+    leading: Icon(icon, color: isSelected ? Color(0xFF702fc8) : null),
+    trailing:
+        isSelected ? Icon(Icons.check_circle, color: Color(0xFF702fc8)) : null,
+    onTap: () {
+      viewModel.updateSortOption(option);
+      // 정렬 후 Drawer 닫기
+      Navigator.pop(context);
+    },
+  );
 }
 
 class PokemonList extends StatelessWidget {

@@ -2,8 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poke_master/repositories/pokemon_repository.dart';
 import 'package:poke_master/viewmodels/bookmark_viewmodel.dart';
+import 'package:poke_master/viewmodels/login_viewmodel.dart';
 import 'package:poke_master/viewmodels/pokemon_list_viewmodel.dart';
-import 'package:poke_master/views/screens/auth_screen.dart';
+import 'package:poke_master/views/screens/pokemon_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,6 +41,7 @@ void main() async {
         ChangeNotifierProvider<PokemonListViewModel>(
           create: (_) => viewModel, // 미리 생성된 viewModel 사용
         ),
+        ChangeNotifierProvider<LoginViewModel>(create: (_) => LoginViewModel()),
       ],
       child: MyApp(repository: repository, initialDarkMode: isDarkMode),
     ),
@@ -65,6 +67,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _isDarkMode = widget.initialDarkMode;
     _loadTheme(); // 앱 시작 시 테마 불러오기
   }
 
@@ -80,10 +83,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isDarkMode =
-          prefs.getBool('isDarkMode') ??
-          (WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-              Brightness.dark);
+      _isDarkMode = prefs.getBool('isDarkMode') ?? widget.initialDarkMode;
     });
   }
 
@@ -91,6 +91,24 @@ class _MyAppState extends State<MyApp> {
   Future<void> _saveTheme(bool isDarkMode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', isDarkMode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Poke Master',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: Provider<PokemonRepository>.value(
+        value: widget.repository,
+        child: PokemonListScreen(
+          isDarkMode: _isDarkMode,
+          onThemeChanged: _toggleTheme,
+        ),
+      ),
+    );
   }
 
   // @override
@@ -103,27 +121,12 @@ class _MyAppState extends State<MyApp> {
   //     themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
   //     home: Provider<PokemonRepository>.value(
   //       value: widget.repository,
-  //       child: PokemonListScreen(_isDarkMode, onThemeChanged: _toggleTheme),
+  //       child: AuthScreen(
+  //         isDarkMode: _isDarkMode,
+  //         onThemeChanged: _toggleTheme,
+  //         repository: widget.repository,
+  //       ),
   //     ),
   //   );
   // }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Poke Master',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: Provider<PokemonRepository>.value(
-        value: widget.repository,
-        child: AuthScreen(
-          isDarkMode: _isDarkMode,
-          onThemeChanged: _toggleTheme,
-          repository: widget.repository,
-        ),
-      ),
-    );
-  }
 }
