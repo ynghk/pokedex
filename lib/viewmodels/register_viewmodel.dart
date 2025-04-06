@@ -39,7 +39,7 @@ class RegisterViewModel extends ChangeNotifier {
       } else if (e.code == 'invalid-email') {
         _errorMessage = 'Insert a valid email';
       } else {
-        _errorMessage = 'Registration failed: ${e.message}';
+        _errorMessage = 'Registration failed: ${e.code}';
       }
     } catch (e) {
       _errorMessage = 'Registration failed: $e';

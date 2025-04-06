@@ -213,8 +213,9 @@ class PokemonListScreen extends StatelessWidget {
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text('Logged out!'),
+                                          content: Text('See ya!'),
                                           duration: Duration(seconds: 2),
+                                          backgroundColor: Colors.red,
                                         ),
                                       );
                                       viewModel.checkAuthState(context);

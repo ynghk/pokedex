@@ -48,6 +48,22 @@ class LoginScreen extends StatelessWidget {
                             viewModel.isLoggingIn
                                 ? null
                                 : () async {
+                                  if (viewModel.emailController.text.isEmpty ||
+                                      viewModel
+                                          .passwordController
+                                          .text
+                                          .isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Please enter email and password',
+                                        ),
+                                        duration: Duration(seconds: 2),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   await viewModel.signUserIn(
                                     viewModel.emailController.text,
                                     viewModel.passwordController.text,
@@ -57,9 +73,18 @@ class LoginScreen extends StatelessWidget {
                                       SnackBar(
                                         content: Text('Welcome trainer!'),
                                         duration: Duration(seconds: 2),
+                                        backgroundColor: Color(0xFF702fc8),
                                       ),
                                     );
                                     Navigator.pop(context);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(viewModel.errorMessage!),
+                                        duration: Duration(seconds: 1),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
                                   }
                                 },
                         child: Container(
