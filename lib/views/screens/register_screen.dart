@@ -152,7 +152,14 @@ class RegisterScreen extends StatelessWidget {
                       viewModel.confirmPasswordController.text) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Passwords do not match!'),
+                        content: Text(
+                          'Passwords do not match!',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                         duration: Duration(seconds: 2),
                         backgroundColor: Colors.red,
                       ),
@@ -169,7 +176,14 @@ class RegisterScreen extends StatelessWidget {
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Registration Successful!'),
+                        content: Text(
+                          'Registration Successful!',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                         duration: Duration(seconds: 2),
                         backgroundColor: Color(0xFF702fc8),
                       ),

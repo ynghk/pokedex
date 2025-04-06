@@ -219,7 +219,14 @@ class PokedexScreen extends StatelessWidget {
                               if (FirebaseAuth.instance.currentUser == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Sign in th use bookmark'),
+                                    content: Text(
+                                      'Sign in to use bookmark',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
                                     duration: Duration(seconds: 1),
                                     backgroundColor: Colors.red,
                                   ),
@@ -231,10 +238,19 @@ class PokedexScreen extends StatelessWidget {
                                   SnackBar(
                                     content: Text(
                                       isCurrentlyBookmarked
-                                          ? 'Bookmared Removed!'
-                                          : 'Bookmared!',
+                                          ? 'Bookmark Removed!'
+                                          : 'Bookmarked!',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
                                     duration: Duration(milliseconds: 500),
+                                    backgroundColor:
+                                        isCurrentlyBookmarked
+                                            ? Colors.red
+                                            : Color(0xFF702fc8),
                                   ),
                                 );
                                 bookmarkViewModel.toggleBookmark(pokedex);
