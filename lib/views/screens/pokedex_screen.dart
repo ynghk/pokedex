@@ -240,6 +240,7 @@ class PokedexScreen extends StatelessWidget {
                                           ? 'Bookmark Removed!'
                                           : 'Bookmarked!',
                                       style: TextStyle(
+                                        color: Colors.white,
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                       ),
