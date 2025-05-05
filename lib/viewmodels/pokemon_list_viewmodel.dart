@@ -248,12 +248,7 @@ class PokemonListViewModel with ChangeNotifier {
   // 스크롤 상단으로 이동 버튼
   void scrollToTop() {
     if (scrollController.hasClients) {
-      // 연결된 뷰가 있는지 확인
-      scrollController.animateTo(
-        0,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      scrollController.jumpTo(0);
     }
   }
 
