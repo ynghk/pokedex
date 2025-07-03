@@ -1,4 +1,5 @@
 # Pokémon Pokédex
+<img width="100" alt="Group 1154" src="https://github.com/user-attachments/assets/a87d1ed1-0c98-47a3-80f5-3d2c086ba660" />
 
 A Flutter-based Pokémon Pokédex application that provides comprehensive information about Pokémon from the Kanto region to the Hisui region. Built using the [PokéAPI](https://pokeapi.co/), this app offers a rich set of features including Pokémon details, bookmarking, filtering, sorting, and Firebase authentication for personalized functionality.
 
@@ -26,6 +27,8 @@ A Flutter-based Pokémon Pokédex application that provides comprehensive inform
   - Optimized for both iOS and Android platforms.
 
 ## Screenshots
+
+<img width="200" alt="Group 1154" src="https://github.com/user-attachments/assets/ecaed0b0-fbe3-48d3-b407-e79b1458ca74" />
 <img width="200" alt="Group 1136" src="https://github.com/user-attachments/assets/bb66547e-261e-475f-bed9-55901776344f" />
 <img width="200" alt="Group 1137" src="https://github.com/user-attachments/assets/6c821d08-b304-46f0-8617-93e3d4b21b83" />
 <img width="200" alt="Group 1145" src="https://github.com/user-attachments/assets/66ffddb0-2a0b-4e46-9217-b77911b65b58" />
@@ -36,6 +39,8 @@ A Flutter-based Pokémon Pokédex application that provides comprehensive inform
 <img width="200" alt="Group 1147" src="https://github.com/user-attachments/assets/c7367d6c-88cd-493c-a2ba-a3265dc5e4ce" />
 <img width="200" alt="Group 1152" src="https://github.com/user-attachments/assets/15b0558e-bb7d-487c-8374-671b54474c47" />
 <img width="200" alt="Group 1150" src="https://github.com/user-attachments/assets/040f2803-5f1d-4bce-94ae-953ba11254d7" />
+
+## Views
 
 ![Intro](https://github.com/user-attachments/assets/d583feab-194f-4a7f-a43e-940d68ea55ee)
 ![pokemonDetail](https://github.com/user-attachments/assets/fccf012f-2fea-42c1-9522-70a2e8de595a)
