@@ -13,6 +13,14 @@ class LoginScreen extends StatelessWidget {
     return GestureDetector(
       onTap: viewModel.unfocusKeyboard(context),
       child: Scaffold(
+        appBar: AppBar(
+          // actions: [
+          //   IconButton(
+          //     icon: Icon(Icons.close),
+          //     onPressed: () => Navigator.of(context).pop(),
+          //   ),
+          // ],
+        ),
         body: SafeArea(
           child: Center(
             child: Consumer<LoginViewModel>(

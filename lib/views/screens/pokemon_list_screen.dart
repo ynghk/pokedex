@@ -303,7 +303,7 @@ class PokemonListScreen extends StatelessWidget {
                               Text(
                                 'Filter by Type',
                                 style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
