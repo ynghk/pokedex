@@ -34,7 +34,7 @@ class PokemonRepository {
         return pokemons.where((p) => p.id > 809 && p.id <= 898).toList();
       case 'Paldea':
         return pokemons
-            .where((p) => p.id > 906 && p.id <= 1003)
+            .where((p) => p.id > 906 && p.id <= 1025)
             .toList(); // 1010 아님
       case 'Hisui':
         return pokemons.where((p) => _isHisuiVariant(p)).toList();
